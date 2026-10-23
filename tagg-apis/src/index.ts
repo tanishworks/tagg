@@ -1,6 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
 import type { LobbyID, PlayerID } from "./types.ts";
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 
 export interface Env {
     MY_DURABLE_OBJECT: DurableObjectNamespace<LobbyRoom>;
@@ -8,9 +8,21 @@ export interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
+function handleResult(
+    c: Context,
+    result: { success: boolean; error?: string; message?: string },
+) {
+    if (!result.success) {
+        return c.json({ success: false, message: result.error }, 400);
+    }
+    return c.json(result, 200);
+}
+
 export class LobbyRoom extends DurableObject<Env> {
     players: string[] = [];
     running: boolean = false;
+    host: string = "";
+    roles: Record<PlayerID, Role> = {};
 
     async join(playerID: PlayerID) {
         if (this.players.includes(playerID)) {
@@ -33,9 +45,77 @@ export class LobbyRoom extends DurableObject<Env> {
         console.log("Current players in the room", this.players);
         // set player's currentLobbyID
 
+        this.host = this.players[0];
+
         return {
             success: true,
             message: `Player ${playerID} joined the room. Total: ${this.players.length}`,
+        };
+    }
+
+    async leave(playerID: PlayerID) {
+        if (!this.players.includes(playerID)) {
+            return {
+                success: false,
+                error: `Player ${playerID} is not in this room`,
+            };
+        }
+
+        this.players = this.players.filter((id) => id !== playerID);
+        console.log(
+            "Player",
+            playerID,
+            "has left the room. Total:",
+            this.players.length,
+        );
+        // set player's currentLobbyID back to null in supabase;
+
+        this.host = this.players[0];
+
+        return {
+            success: true,
+            message: `Player ${playerID} left the room. Total: ${this.players.length}`,
+        };
+    }
+
+    async getStatus() {
+        return {
+            players: this.players,
+            host: this.host,
+            running: this.running,
+            totalPlayers: this.players.length,
+            success: true,
+            message: `Recieved status for room.`,
+        };
+    }
+
+    // Roles
+    async setRole(playerID: PlayerID, role: Role) {
+        if (!this.players.includes(playerID)) {
+            return {
+                success: false,
+                error: `Player ${playerID} is not in the room.`,
+            };
+        }
+
+        if (this.host !== this.players[0]) {
+            return {
+                success: false,
+                error: `Player ${playerID} does not have host access`,
+            };
+        }
+
+        if (this.running) {
+            return {
+                success: false,
+                error: `Lobby is already running`,
+            };
+        }
+
+        this.roles[playerID] = role;
+        return {
+            success: true,
+            message: `Player ${playerID} is now a ${role}`,
         };
     }
 }
@@ -45,95 +125,42 @@ app.post("/lobby/join", async (c) => {
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
     const result = await lobby.join(body.playerID);
 
-    if (!result.success) {
-        return c.json(
-            {
-                success: false,
-                message: result.error,
-            },
-            400,
-        );
-    }
+    return handleResult(c, result)
+});
 
-    return c.json(
-        {
-            success: result.success,
-            message: result.message,
-        },
-        200,
-    );
+app.post("/lobby/leave", async (c) => {
+    const body = await c.req.json<{ lobbyID: LobbyID; playerID: PlayerID }>();
+    const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
+    const result = await lobby.leave(body.playerID);
+
+    return handleResult(c, result)
 });
 
 app.get("/lobby/:id", async (c) => {
-    const body = await c.req.json<{ lobbyID: LobbyID; playerID: PlayerID }>();
+    const lobbyID = c.req.param("id");
+    const lobby = c.env.MY_DURABLE_OBJECT.getByName(lobbyID);
+    const status = await lobby.getStatus();
+
+    // if (!result.success) {
+    //     return c.json({
+    //         success:false,
+    //         message: result.error,
+    //     })
+    // }
+
+    return c.json(status, 200);
+});
+
+app.post("/lobby/role", async (c) => {
+    const body = await c.req.json<{
+        lobbyID: LobbyID;
+        playerID: PlayerID;
+        role: Role;
+    }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
-    const result = await lobby.join(body.playerID);
+    const result = await lobby.setRole(body.playerID, body.role);
+
+    return handleResult(c, result)
 });
 
 export default app;
-
-// /**
-//  * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
-//  * `Env` object can be regenerated with `npm run cf-typegen`.
-//  *
-//  * Learn more at https://developers.cloudflare.com/durable-objects
-//  */
-//
-// /** A Durable Object's behavior is defined in an exported Javascript class */
-// export class LobbyRoom extends DurableObject<Env> {
-//     players: string[] = [];
-//     running: boolean = false;
-//
-//     /**
-//      * The constructor is invoked once upon creation of the Durable Object, i.e. the first call to
-//      * 	`DurableObjectStub::get` for a given identifier (no-op constructors can be omitted)
-//      *
-//      * @param ctx - The interface for interacting with Durable Object state
-//      * @param env - The interface to reference bindings declared in wrangler.jsonc
-//      */
-//     constructor(ctx: DurableObjectState, env: Env) {
-//         super(ctx, env);
-//     }
-//
-//     /**
-//      * The Durable Object exposes an RPC method sayHello which will be invoked when a Durable
-//      *  Object instance receives a request from a Worker via the same method invocation on the stub
-//      *
-//      * @param name - The name provided to a Durable Object instance from a Worker
-//      * @returns The greeting to be sent back to the Worker
-//      */
-//     async sayHello(name: string): Promise<string> {
-//         return `Hello, ${name}!`;
-//     }
-//
-//     async join(playerID: PlayerID) {
-//         console.log("join triggered");
-//         return `join triggered for ${playerID}`;
-//     }
-// }
-//
-// export default {
-//     /**
-//      * This is the standard fetch handler for a Cloudflare Worker
-//      *
-//      * @param request - The request submitted to the Worker from the client
-//      * @param env - The interface to reference bindings declared in wrangler.jsonc
-//      * @param ctx - The execution context of the Worker
-//      * @returns The response to be sent back to the client
-//      */
-//     async fetch(request, env, ctx): Promise<Response> {
-//         // Create a stub to open a communication channel with the Durable Object
-//         // instance named "foo".
-//         //
-//         // Requests from all Workers to the Durable Object instance named "foo"
-//         // will go to a single remote Durable Object instance.
-//         const stub = env.MY_DURABLE_OBJECT.getByName("foo");
-//
-//         // Call the `sayHello()` RPC method on the stub to invoke the method on
-//         // the remote Durable Object instance.
-//         const greeting = await stub.sayHello("world");
-//         const joinLobby = await stub.join("p001");
-//
-//         return new Response(greeting);
-//     },
-// } satisfies ExportedHandler<Env>;
