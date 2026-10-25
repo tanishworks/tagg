@@ -4,6 +4,9 @@ import { Hono, type Context } from "hono";
 
 export interface Env {
     MY_DURABLE_OBJECT: DurableObjectNamespace<LobbyRoom>;
+    // TODO: Configure these values for local development and deployed Workers.
+    SUPABASE_URL: string;
+    SUPABASE_PUBLISHABLE_KEY: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -32,7 +35,7 @@ export class LobbyRoom extends DurableObject<Env> {
             };
         }
 
-        // implement checking for player's current lobby
+        // TODO: Read current_lobby_id from Supabase and reject players already in a lobby.
 
         if (this.running) {
             return {
@@ -43,7 +46,7 @@ export class LobbyRoom extends DurableObject<Env> {
 
         this.players.push(playerID);
         console.log("Current players in the room", this.players);
-        // set player's currentLobbyID
+        // TODO: Write lobbyID to this player's current_lobby_id in Supabase.
 
         this.host = this.players[0];
 
@@ -68,7 +71,7 @@ export class LobbyRoom extends DurableObject<Env> {
             "has left the room. Total:",
             this.players.length,
         );
-        // set player's currentLobbyID back to null in supabase;
+        // TODO: Clear this player's current_lobby_id in Supabase after leaving.
 
         this.host = this.players[0];
 
@@ -121,6 +124,7 @@ export class LobbyRoom extends DurableObject<Env> {
 }
 
 app.post("/lobby/join", async (c) => {
+    // TODO: Get playerID from the verified bearer token instead of the request body.
     const body = await c.req.json<{ lobbyID: LobbyID; playerID: PlayerID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
     const result = await lobby.join(body.playerID);
