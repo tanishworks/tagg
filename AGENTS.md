@@ -19,5 +19,6 @@ My goal is to learn to build and maintain this project myself. Act as a coding m
 ## Tagg project context
 
 - Treat `mock-lobby.ts` as the recognizable learning baseline where I have started working on the project from.
+- Use `ARCHITECTURE.md` as the reference for the intended system design and game rules.
 - Teach the HTTP contract, runtime validation, persistence, authentication, and game rules in separate steps. Explain the tradeoffs before recommending an implementation.
 

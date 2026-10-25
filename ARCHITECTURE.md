@@ -12,7 +12,7 @@ The architecture is designed to be **compute- and cost-efficient**:
 
 ```mermaid
 flowchart TD
-    Client["📱 Mobile / Web Client"]
+    Client["Mobile / Web Client"]
     
     subgraph Edge["Cloudflare Edge Network"]
         Worker["Cloudflare Worker (Hono Router)"]
@@ -126,6 +126,8 @@ create table public.matches (
 
 ### B. Durable Object In-Memory State (`LobbyRoom`)
 
+When a lobby is created, its creator automatically joins it. The first player to join is the host, so the creator becomes the host. The host is responsible for assigning player roles before the game starts.
+
 ```typescript
 export class LobbyRoom extends DurableObject<Env> {
     // Ephemeral state alive only during the match
@@ -137,6 +139,7 @@ export class LobbyRoom extends DurableObject<Env> {
     }> = new Map();
 
     running: boolean = false;
+    hostID: PlayerID | null = null;
     startedAt: number | null = null;
 }
 ```

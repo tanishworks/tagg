@@ -148,7 +148,11 @@ function joinLobby(playerID: PlayerID, lobbyID: LobbyID) {
 // -- Update data ---
 //
 // Update location
-function updateLocation(playerID: PlayerID, latitude: number, longitude: number) {
+function updateLocation(
+    playerID: PlayerID,
+    latitude: number,
+    longitude: number,
+) {
     // there should be a better way to type check this i mean this is called typescript but anyways here is the type checking for coords
 
     const player = fetchPlayer(playerID);
@@ -357,8 +361,8 @@ function isRole(value: unknown): value is Role {
 }
 
 function leaveLobby(lobbyID: LobbyID, playerID: PlayerID) {
-    const lobby = fetchLobby(lobbyID)
-    const player = fetchPlayer(playerID)
+    const lobby = fetchLobby(lobbyID);
+    const player = fetchPlayer(playerID);
     if (!lobby) {
         console.log("lobby", lobbyID, "not found");
         return `lobby ${lobbyID} not found`;
@@ -370,15 +374,19 @@ function leaveLobby(lobbyID: LobbyID, playerID: PlayerID) {
     }
 
     if (lobbyID != player.currentLobbyID) {
-        console.log("Mismatch Error: Player reports lobby", player.currentLobbyID, "but request reports", lobbyID)
-        return `Mismatch Error: Player reports lobby ${player.currentLobbyID}, but request reports ${lobbyID}`
+        console.log(
+            "Mismatch Error: Player reports lobby",
+            player.currentLobbyID,
+            "but request reports",
+            lobbyID,
+        );
+        return `Mismatch Error: Player reports lobby ${player.currentLobbyID}, but request reports ${lobbyID}`;
     }
 
     lobby.players = lobby.players.filter((id) => id !== playerID);
-    player.currentLobbyID = null
-    player.role = null
-    return `player ${playerID} (${player.name}) has left lobby ${lobbyID}`
+    player.currentLobbyID = null;
+    player.role = null;
+    return `player ${playerID} (${player.name}) has left lobby ${lobbyID}`;
 }
 
 runTest();
-
