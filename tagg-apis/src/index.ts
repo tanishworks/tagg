@@ -125,9 +125,9 @@ export class LobbyRoom extends DurableObject<Env> {
 
 app.post("/lobby/join", async (c) => {
     // TODO: Get playerID from the verified bearer token instead of the request body.
-    const body = await c.req.json<{ lobbyID: LobbyID; playerID: PlayerID }>();
+    const body = await c.req.json<{ lobbyID: LobbyID; }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
-    const result = await lobby.join(body.playerID);
+    const result = await lobby.join();
 
     return handleResult(c, result)
 });
