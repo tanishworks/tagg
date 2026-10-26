@@ -95,7 +95,7 @@ export class LobbyRoom extends DurableObject<Env> {
         if (!this.players.includes(playerID)) {
             return {
                 success: false,
-                error: `Player ${playerID} is not in the room.`
+                error: `Unauthorized: Player ${playerID} is not in the room.`
             }
         }
 
@@ -188,7 +188,7 @@ app.get("/lobby/:id", async (c) => {
         return c.json({
             success:false,
             message: status.error,
-        })
+        }, 401)
     }
 
     return c.json(status, 200);
