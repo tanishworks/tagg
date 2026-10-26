@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import type { LobbyID, PlayerID } from "./types.ts";
 import { Hono, type Context } from "hono";
+import getPlayerIDFromToken from "./supabaseHelper.js";
 
 export interface Env {
     MY_DURABLE_OBJECT: DurableObjectNamespace<LobbyRoom>;
@@ -11,6 +12,10 @@ export interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
+// Code questions for myself:
+//   What should I store in DO, what needs to persists if the worker restarts
+//   How would the other clients know the game has started once the lobby.running updates to true so it can start sharing location and the rest of the proccess?
+
 function handleResult(
     c: Context,
     result: { success: boolean; error?: string; message?: string },
@@ -19,6 +24,10 @@ function handleResult(
         return c.json({ success: false, message: result.error }, 400);
     }
     return c.json(result, 200);
+}
+
+function isRole(value: unknown): value is Role {
+    return value === "hunter" || value === "hider";
 }
 
 export class LobbyRoom extends DurableObject<Env> {
@@ -81,9 +90,18 @@ export class LobbyRoom extends DurableObject<Env> {
         };
     }
 
-    async getStatus() {
+    async getStatus(playerID: PlayerID) {
+        // TODO: Make a check for if the playerID requesting belongs to the lobby
+        if (!this.players.includes(playerID)) {
+            return {
+                success: false,
+                error: `Player ${playerID} is not in the room.`
+            }
+        }
+
         return {
             players: this.players,
+            // TODO: make it return a string of player names instead (or both?)
             host: this.host,
             running: this.running,
             totalPlayers: this.players.length,
@@ -124,33 +142,54 @@ export class LobbyRoom extends DurableObject<Env> {
 }
 
 app.post("/lobby/join", async (c) => {
-    // TODO: Get playerID from the verified bearer token instead of the request body.
-    const body = await c.req.json<{ lobbyID: LobbyID; }>();
+    const playerID = await getPlayerIDFromToken(
+        c.req.header("Authorization"),
+        c.env,
+    );
+    if (!playerID) {
+        return c.json({ message: "Unauthorised" }, 401);
+    }
+    const body = await c.req.json<{ lobbyID: LobbyID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
-    const result = await lobby.join();
+    const result = await lobby.join(playerID);
 
-    return handleResult(c, result)
+    return handleResult(c, result);
 });
 
 app.post("/lobby/leave", async (c) => {
+    const playerID = await getPlayerIDFromToken(
+        c.req.header("Authorization"),
+        c.env,
+    );
+    if (!playerID) {
+        return c.json({ message: "Unauthorised" }, 401);
+    }
+
     const body = await c.req.json<{ lobbyID: LobbyID; playerID: PlayerID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
-    const result = await lobby.leave(body.playerID);
+    const result = await lobby.leave(playerID);
 
-    return handleResult(c, result)
+    return handleResult(c, result);
 });
 
 app.get("/lobby/:id", async (c) => {
+    const playerID = await getPlayerIDFromToken(
+        c.req.header("Authorization"),
+        c.env,
+    );
+    if (!playerID) {
+        return c.json({ message: "Unauthorised" }, 401);
+    }
     const lobbyID = c.req.param("id");
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(lobbyID);
-    const status = await lobby.getStatus();
+    const status = await lobby.getStatus(playerID);
 
-    // if (!result.success) {
-    //     return c.json({
-    //         success:false,
-    //         message: result.error,
-    //     })
-    // }
+    if (!status.success) {
+        return c.json({
+            success:false,
+            message: status.error,
+        })
+    }
 
     return c.json(status, 200);
 });
@@ -158,13 +197,23 @@ app.get("/lobby/:id", async (c) => {
 app.post("/lobby/role", async (c) => {
     const body = await c.req.json<{
         lobbyID: LobbyID;
-        playerID: PlayerID;
-        role: Role;
+        role: unknown;
     }>();
+    // TODO: Validate json : DONE (checks with isRole function and returns error code)
+    if (!isRole(body.role)) {
+        return c.json({ message: "Invalid role" }, 400)
+    }
+    const playerID = await getPlayerIDFromToken(
+        c.req.header("Authorization"),
+        c.env,
+    );
+    if (!playerID) {
+        return c.json({ message: "Unauthorised" }, 401);
+    }
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
-    const result = await lobby.setRole(body.playerID, body.role);
+    const result = await lobby.setRole(playerID, body.role);
 
-    return handleResult(c, result)
+    return handleResult(c, result);
 });
 
 export default app;

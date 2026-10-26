@@ -4,7 +4,7 @@ import type { Env } from "./index.ts";
 
 // TODO: Export this helper and use it in the join route.
 async function getPlayerIDFromToken(
-    authorization: string,
+    authorization: string | undefined,
     env: Env,
 ): Promise<string | null> {
     if (!authorization?.startsWith("Bearer ")) {
@@ -34,3 +34,5 @@ async function getPlayerIDFromToken(
 
     return data.claims.sub;
 }
+
+export default getPlayerIDFromToken;
