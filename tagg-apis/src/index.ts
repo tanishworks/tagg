@@ -1,20 +1,22 @@
 import { DurableObject } from "cloudflare:workers";
 import type { LobbyID, PlayerID } from "./types.ts";
 import { Hono, type Context } from "hono";
-import getPlayerIDFromToken from "./supabaseHelper.js";
+import getPlayerIDFromToken from "./supabaseFunctions/getPlayerIDFromToken.js";
 
 export interface Env {
     MY_DURABLE_OBJECT: DurableObjectNamespace<LobbyRoom>;
-    // TODO: Configure these values for local development and deployed Workers.
+    // TODO: Configure these values for local development and deployed Workers. EDIT: What does this mean??
     SUPABASE_URL: string;
     SUPABASE_PUBLISHABLE_KEY: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Code questions for myself:
-//   What should I store in DO, what needs to persists if the worker restarts
-//   How would the other clients know the game has started once the lobby.running updates to true so it can start sharing location and the rest of the proccess?
+/*
+    Code questions for myself:
+    - What should I store in DO, what needs to persists if the worker restarts
+    - How would the other clients know the game has started once the lobby.running updates to true so it can start sharing location and the rest of the proccess?
+*/
 
 function handleResult(
     c: Context,
@@ -44,7 +46,7 @@ export class LobbyRoom extends DurableObject<Env> {
             };
         }
 
-        // TODO: Read current_lobby_id from Supabase and reject players already in a lobby.
+        // The HTTP handler must check current_lobby_id before calling join; this DO method has no bearer token.
 
         if (this.running) {
             return {
@@ -55,6 +57,7 @@ export class LobbyRoom extends DurableObject<Env> {
 
         this.players.push(playerID);
         console.log("Current players in the room", this.players);
+
         // TODO: Write lobbyID to this player's current_lobby_id in Supabase.
 
         this.host = this.players[0];
@@ -80,6 +83,7 @@ export class LobbyRoom extends DurableObject<Env> {
             "has left the room. Total:",
             this.players.length,
         );
+
         // TODO: Clear this player's current_lobby_id in Supabase after leaving.
 
         this.host = this.players[0];
@@ -91,7 +95,6 @@ export class LobbyRoom extends DurableObject<Env> {
     }
 
     async getStatus(playerID: PlayerID) {
-        // TODO: Make a check for if the playerID requesting belongs to the lobby
         if (!this.players.includes(playerID)) {
             return {
                 success: false,
@@ -101,7 +104,7 @@ export class LobbyRoom extends DurableObject<Env> {
 
         return {
             players: this.players,
-            // TODO: make it return a string of player names instead (or both?)
+            // TODO: Make it return a string of player names from supabase instead (or both?)
             host: this.host,
             running: this.running,
             totalPlayers: this.players.length,
@@ -149,6 +152,8 @@ app.post("/lobby/join", async (c) => {
     if (!playerID) {
         return c.json({ message: "Unauthorised" }, 401);
     }
+
+    // TODO: Use getCurrentLobbyID here and reject players who already belong to a lobby.
     const body = await c.req.json<{ lobbyID: LobbyID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
     const result = await lobby.join(playerID);
@@ -186,7 +191,7 @@ app.get("/lobby/:id", async (c) => {
 
     if (!status.success) {
         return c.json({
-            success:false,
+            success: false,
             message: status.error,
         }, 401)
     }
@@ -199,17 +204,20 @@ app.post("/lobby/role", async (c) => {
         lobbyID: LobbyID;
         role: unknown;
     }>();
-    // TODO: Validate json : DONE (checks with isRole function and returns error code)
+
     if (!isRole(body.role)) {
         return c.json({ message: "Invalid role" }, 400)
     }
+
     const playerID = await getPlayerIDFromToken(
         c.req.header("Authorization"),
         c.env,
     );
+
     if (!playerID) {
         return c.json({ message: "Unauthorised" }, 401);
     }
+
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
     const result = await lobby.setRole(playerID, body.role);
 

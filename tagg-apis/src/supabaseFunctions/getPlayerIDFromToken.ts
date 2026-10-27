@@ -1,8 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Env } from "./index.ts";
-// import { create } from "node:domain";
+import type { Env } from "../index";
 
-// TODO: Export this helper and use it in the join route.
 async function getPlayerIDFromToken(
     authorization: string | undefined,
     env: Env,
@@ -12,6 +10,7 @@ async function getPlayerIDFromToken(
     }
 
     const token = authorization.slice("Bearer ".length).trim();
+
     if (!token) {
         return null;
     }
