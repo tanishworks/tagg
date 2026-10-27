@@ -1,23 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
+import supabaseAuthorization from "./supabaseAuthorization";
 import type { Env } from "../index"
-
-function authStatus(authorization: string | undefined): authorization is string {
-    if (!authorization?.startsWith("Bearer ")) {
-        return false;
-    }
-
-    const token = authorization.slice("Bearer ".length).trim();
-
-    if (!token) {
-        return false;
-    }
-
-    return true;
-}
 
 async function getCurrentLobbyID(playerID: PlayerID, env: Env, authorization: string | undefined): Promise<LobbyID | null> {
 
-    if (!authStatus(authorization)) {
+    if (!supabaseAuthorization(authorization)) {
         return null;
     }
 

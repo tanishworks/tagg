@@ -1,19 +1,16 @@
 import { createClient } from "@supabase/supabase-js";
+import supabaseAuthorization from "./supabaseAuthorization";
 import type { Env } from "../index";
 
 async function getPlayerIDFromToken(
     authorization: string | undefined,
     env: Env,
 ): Promise<string | null> {
-    if (!authorization?.startsWith("Bearer ")) {
+    if (!supabaseAuthorization(authorization)) {
         return null;
     }
 
     const token = authorization.slice("Bearer ".length).trim();
-
-    if (!token) {
-        return null;
-    }
 
     const supabase = createClient(
         env.SUPABASE_URL,
