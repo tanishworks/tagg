@@ -2,10 +2,11 @@ import { DurableObject } from "cloudflare:workers";
 import type { LobbyID, PlayerID } from "./types.ts";
 import { Hono, type Context } from "hono";
 import getPlayerIDFromToken from "./supabaseFunctions/getPlayerIDFromToken.js";
+import getCurrentLobbyID from "./supabaseFunctions/getCurrentLobbyID.js";
 
 export interface Env {
     MY_DURABLE_OBJECT: DurableObjectNamespace<LobbyRoom>;
-    // TODO: Configure these values for local development and deployed Workers. EDIT: What does this mean??
+    //  TODO: Configure these values for local development and deployed Workers. EDIT: What does this mean??
     SUPABASE_URL: string;
     SUPABASE_PUBLISHABLE_KEY: string;
 }
@@ -22,6 +23,10 @@ function handleResult(
     c: Context,
     result: { success: boolean; error?: string; message?: string },
 ) {
+    /*
+     *  NOTE: This function only returns status 200 (success) and 400 (failure).
+     *  If there is any other kind of error, handle it using the return c.json in itself.
+    */
     if (!result.success) {
         return c.json({ success: false, message: result.error }, 400);
     }
@@ -41,12 +46,10 @@ export class LobbyRoom extends DurableObject<Env> {
     async join(playerID: PlayerID) {
         if (this.players.includes(playerID)) {
             return {
-                success: false,
-                error: `Player ${playerID} is already in this room`,
+                success: true,
+                message: `Player ${playerID} was already in this room`,
             };
         }
-
-        // The HTTP handler must check current_lobby_id before calling join; this DO method has no bearer token.
 
         if (this.running) {
             return {
@@ -58,7 +61,7 @@ export class LobbyRoom extends DurableObject<Env> {
         this.players.push(playerID);
         console.log("Current players in the room", this.players);
 
-        // TODO: Write lobbyID to this player's current_lobby_id in Supabase.
+        //  TODO: Write lobbyID to this player's current_lobby_id in Supabase.
 
         this.host = this.players[0];
 
@@ -84,7 +87,7 @@ export class LobbyRoom extends DurableObject<Env> {
             this.players.length,
         );
 
-        // TODO: Clear this player's current_lobby_id in Supabase after leaving.
+        //  TODO: Clear this player's current_lobby_id in Supabase after leaving.
 
         this.host = this.players[0];
 
@@ -104,7 +107,7 @@ export class LobbyRoom extends DurableObject<Env> {
 
         return {
             players: this.players,
-            // TODO: Make it return a string of player names from supabase instead (or both?)
+            //  TODO: Make it return a string of player names from supabase instead (or both?)
             host: this.host,
             running: this.running,
             totalPlayers: this.players.length,
@@ -149,13 +152,30 @@ app.post("/lobby/join", async (c) => {
         c.req.header("Authorization"),
         c.env,
     );
+
     if (!playerID) {
+        // handleResult(c, {success: false, message: "Unauthorized"})
+        // Read the comment on handleResult at line:27
         return c.json({ message: "Unauthorised" }, 401);
     }
 
-    // TODO: Use getCurrentLobbyID here and reject players who already belong to a lobby.
+    const currentLobbyID = await getCurrentLobbyID(playerID, c.env, c.req.header("Authorization"))
     const body = await c.req.json<{ lobbyID: LobbyID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
+
+    // if (!result.success) {
+    //     return handleResult(c, result);
+    // }
+
+    if (currentLobbyID !== null && currentLobbyID !== body.lobbyID) {
+        const currentLobby = c.env.MY_DURABLE_OBJECT.getByName(currentLobbyID);
+        const leaveResult = await currentLobby.leave(playerID)
+        if (!leaveResult.success) {
+            return handleResult(c, leaveResult)
+        }
+        //  TODO: add boddy.lobbyID to current_lobby_id
+    }
+
     const result = await lobby.join(playerID);
 
     return handleResult(c, result);

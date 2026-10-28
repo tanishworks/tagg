@@ -1,12 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import supabaseAuthorization from "./supabaseAuthorization";
 import type { Env } from "../index"
+import type { LobbyID, PlayerID } from "../types"
 
 async function getCurrentLobbyID(playerID: PlayerID, env: Env, authorization: string | undefined): Promise<LobbyID | null> {
 
-    if (!supabaseAuthorization(authorization)) {
-        return null;
-    }
+    if (!supabaseAuthorization(authorization)) throw new Error("Player is unauthorized")
 
     const supabase = createClient(
         env.SUPABASE_URL,
@@ -24,14 +23,8 @@ async function getCurrentLobbyID(playerID: PlayerID, env: Env, authorization: st
         .maybeSingle();
 
     if (error) throw error
-    if (error) {
-        return null;
-    }
 
     if (!data) throw new Error("Player profile not found")
-    if (!data) {
-        return null;
-    }
 
     return data.current_lobby_id;
 }
