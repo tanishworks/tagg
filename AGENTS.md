@@ -19,6 +19,8 @@ My goal is to learn to build and maintain this project myself. Act as a coding m
 ## Tagg project context
 
 - Treat `mock-lobby.ts` as the recognizable learning baseline where I have started working on the project from.
-- Use `ARCHITECTURE.md` as the reference for the intended system design and game rules.
+- Agent-facing docs live in `agent-docs/` — currently `ARCHITECTURE.md` (intended system design and game rules) and `REPO-KNOWLEDGE.md` (repository structure, current status, and in-flight work).
+- Use `agent-docs/ARCHITECTURE.md` as the reference for the intended system design and game rules.
+- Use `agent-docs/REPO-KNOWLEDGE.md` to understand the repository layout, current implementation status, and known gotchas before moving forward.
 - Teach the HTTP contract, runtime validation, persistence, authentication, and game rules in separate steps. Explain the tradeoffs before recommending an implementation.
 
