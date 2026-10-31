@@ -36,6 +36,19 @@
   - `getCurrentLobbyID.ts` — reads `current_lobby_id` from Supabase.
   - `setCurrentLobbyID.ts` — **UNTRACKED STUB**; currently an empty `Promise<>` placeholder with TODOs — **needs implementation**.
 
+## Supabase (current actual structure)
+
+- **Auth**: Supabase Auth issues JWT access tokens to the client. The Worker validates them via `supabase.auth.getClaims()` (verified against the project JWKS endpoint `/.well-known/jwks.json`, cached) and then opens **user-scoped** Supabase clients by forwarding the caller's `Authorization` header — so database requests run as the `authenticated` Postgres role and are subject to RLS.
+- **Table `players`** (public schema):
+  - `id` — linked to Supabase Auth's `auth.users.id`, not nullable (primary key)
+  - `current_lobby_id` — the lobby the player is currently in; default `null` (`null` = not in any lobby)
+  - `total_wins` — career wins; default `0`
+  - `created_at` — timestamp
+  - `player_name` — planned: display name mirrored from auth metadata (see [`SUPABASE.md`](./SUPABASE.md))
+- **Row creation (decided)**: a DB trigger on `auth.users` INSERT creates the `players` row automatically at signup — Supabase-side, no extra Worker round-trip. SQL lives in [`SUPABASE.md`](./SUPABASE.md), status **NOT YET APPLIED** to the live DB.
+- **`player_name` (decided)**: planned `players.player_name` column snapshotted from auth `raw_user_meta_data` (`display_name` key — it is *metadata*, not a column) at signup, kept in sync by an update trigger on `auth.users`. The **Worker** reads names with a user-scoped client for lobby rosters; the client never queries Supabase. SQL + RLS in [`SUPABASE.md`](./SUPABASE.md).
+- **Drift vs `ARCHITECTURE.md`**: the design doc's aspirational schema names the table `profiles` (with `name`, `total_games_played`, plus a `matches` table); the real table is `players` with the columns above. `ARCHITECTURE.md` stays design-**intent**; this file documents actual state until we decide to sync them.
+
 ## Frontend: `mobile/`
 
 - Expo SDK ~58 (`expo@~58.0.19`, RN `0.88`, expo-router `~58`, reanimated 4.7.1, React 19.3).
