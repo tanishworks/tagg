@@ -3,7 +3,11 @@ import supabaseAuthorization from "./supabaseAuthorization";
 import type { Env } from "../index"
 import type { LobbyID, PlayerID } from "../types"
 
-async function getCurrentLobbyID(playerID: PlayerID, env: Env, authorization: string | undefined): Promise<LobbyID | null> {
+async function getCurrentLobbyID(
+    playerID: PlayerID,
+    env: Env,
+    authorization: string | undefined
+): Promise<LobbyID | null> {
 
     if (!supabaseAuthorization(authorization)) throw new Error("Player is unauthorized")
 

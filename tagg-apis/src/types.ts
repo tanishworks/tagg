@@ -11,3 +11,9 @@ export type Player = {
     currentLobbyID: LobbyID | null;
 };
 
+export type WriteResult = {
+    success: boolean,
+    message?: string,
+    error?: string
+}
+
