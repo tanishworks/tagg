@@ -1,8 +1,9 @@
 import { DurableObject } from "cloudflare:workers";
-import type { LobbyID, PlayerID } from "./types.ts";
+import type { LobbyID, PlayerID } from "./types";
 import { Hono, type Context } from "hono";
-import getPlayerIDFromToken from "./supabaseFunctions/getPlayerIDFromToken.js";
-import getCurrentLobbyID from "./supabaseFunctions/getCurrentLobbyID.js";
+import getPlayerIDFromToken from "./supabaseFunctions/getPlayerIDFromToken";
+import getCurrentLobbyID from "./supabaseFunctions/getCurrentLobbyID";
+import setCurrentLobbyID from "./supabaseFunctions/setCurrentLobbyID"
 
 export interface Env {
     MY_DURABLE_OBJECT: DurableObjectNamespace<LobbyRoom>;
@@ -18,6 +19,11 @@ const app = new Hono<{ Bindings: Env }>();
     - What should I store in DO, what needs to persists if the worker restarts
     - How would the other clients know the game has started once the lobby.running updates to true so it can start sharing location and the rest of the proccess?
 */
+
+//  TODO: implement try{}catch{} error handling
+//  and standardize c.json structure to
+//  error: boolean, message: string
+//  and get rid of error: string
 
 function handleResult(
     c: Context,
@@ -156,10 +162,22 @@ app.post("/lobby/join", async (c) => {
     if (!playerID) {
         // handleResult(c, {success: false, message: "Unauthorized"})
         // Read the comment on handleResult at line:27
-        return c.json({ message: "Unauthorised" }, 401);
+        return c.json({ success: false, message: "Unauthorised" }, 401);
     }
 
-    const currentLobbyID = await getCurrentLobbyID(playerID, c.env, c.req.header("Authorization"))
+    let currentLobbyID: LobbyID | null;
+
+    try {
+        currentLobbyID = await getCurrentLobbyID(
+            playerID,
+            c.env,
+            c.req.header("Authorization")
+        )
+    } catch (error) {
+        console.error(error)
+        return c.json({ success: false, error: "failed to fetch current lobby" })
+    }
+
     const body = await c.req.json<{ lobbyID: LobbyID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
 
@@ -167,6 +185,7 @@ app.post("/lobby/join", async (c) => {
     //     return handleResult(c, result);
     // }
 
+    // Leave current lobby if in one
     if (currentLobbyID !== null && currentLobbyID !== body.lobbyID) {
         const currentLobby = c.env.MY_DURABLE_OBJECT.getByName(currentLobbyID);
         const leaveResult = await currentLobby.leave(playerID)
@@ -174,6 +193,11 @@ app.post("/lobby/join", async (c) => {
             return handleResult(c, leaveResult)
         }
         //  TODO: add boddy.lobbyID to current_lobby_id
+    }
+
+    const setLobbyIDResult = await setCurrentLobbyID(playerID, body.lobbyID, c.env, c.req.header("Authorization"))
+    if (!setLobbyIDResult.success) {
+        return c.json({ success: false, message: setLobbyIDResult.error }, 401);
     }
 
     const result = await lobby.join(playerID);
