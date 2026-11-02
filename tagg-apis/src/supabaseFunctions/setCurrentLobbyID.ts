@@ -17,7 +17,7 @@ async function setCurrentLobbyID(
         env.SUPABASE_URL,
         env.SUPABASE_PUBLISHABLE_KEY,
         {
-            global: { headers: { authorization: authorization } },
+            global: { headers: { Authorization: authorization } },
             auth: { persistSession: false, autoRefreshToken: false }
         }
     );
