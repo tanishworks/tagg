@@ -154,6 +154,9 @@ export class LobbyRoom extends DurableObject<Env> {
 }
 
 app.post("/lobby/join", async (c) => {
+
+    // Get current player ID
+
     const playerID = await getPlayerIDFromToken(
         c.req.header("Authorization"),
         c.env,
@@ -164,6 +167,8 @@ app.post("/lobby/join", async (c) => {
         // Read the comment on handleResult at line:27
         return c.json({ success: false, message: "Unauthorised" }, 401);
     }
+
+    // Get current lobby ID
 
     let currentLobbyID: LobbyID | null;
 
@@ -178,6 +183,8 @@ app.post("/lobby/join", async (c) => {
         return c.json({ success: false, error: "failed to fetch current lobby" })
     }
 
+    // Get info from request body
+
     const body = await c.req.json<{ lobbyID: LobbyID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
 
@@ -185,20 +192,24 @@ app.post("/lobby/join", async (c) => {
     //     return handleResult(c, result);
     // }
 
-    // Leave current lobby if in one
+    // Leave current lobby if in one that is not current lobby
+
     if (currentLobbyID !== null && currentLobbyID !== body.lobbyID) {
         const currentLobby = c.env.MY_DURABLE_OBJECT.getByName(currentLobbyID);
         const leaveResult = await currentLobby.leave(playerID)
         if (!leaveResult.success) {
             return handleResult(c, leaveResult)
         }
-        //  TODO: add boddy.lobbyID to current_lobby_id
     }
+
+    // Set current_lobby_id in DB
 
     const setLobbyIDResult = await setCurrentLobbyID(playerID, body.lobbyID, c.env, c.req.header("Authorization"))
     if (!setLobbyIDResult.success) {
         return c.json({ success: false, message: setLobbyIDResult.error }, 401);
     }
+
+    // Add player to DO
 
     const result = await lobby.join(playerID);
 
@@ -216,6 +227,7 @@ app.post("/lobby/leave", async (c) => {
 
     const body = await c.req.json<{ lobbyID: LobbyID; playerID: PlayerID }>();
     const lobby = c.env.MY_DURABLE_OBJECT.getByName(body.lobbyID);
+    //  TODO: use setCurrentLobbyID and set current_lobby_id in DB to null
     const result = await lobby.leave(playerID);
 
     return handleResult(c, result);
