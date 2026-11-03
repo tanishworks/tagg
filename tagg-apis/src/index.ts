@@ -281,3 +281,28 @@ app.post("/lobby/role", async (c) => {
 });
 
 export default app;
+
+/*
+    TODO: error handling + rollback plan (decided design):
+
+    1. Wire /lobby/leave first: after lobby.leave() succeeds, call
+       setCurrentLobbyID(playerID, null, env, Authorization) and handle
+       its failure (should be 500, not 401/200).
+    2. Add a FlowError (extends Error, carries status + message) in
+       types.ts for infrastructure failures that should throw, e.g. DB
+       unreachable / unexpected nulls.
+    3. Restructure /lobby/join into one try{}catch{} around ALL mutating
+       steps. Compensation = setCurrentLobbyID is the undo function:
+         - remember prevLobbyID (step 2's currentLobbyID) before writing
+         - if lobby.join() fails after the DB write -> restore
+           setCurrentLobbyID(playerID, prevLobbyID) and answer 400
+         - in catch{} -> restore anyway (idempotent) + console.error + 500
+    4. Fix along the way: getCurrentLobbyID catch currently answers 200
+       (missing status) and the setCurrentLobbyID failure in join
+       wrongly uses 401 (should be 500).
+
+    Rule: business rejections (e.g. "room already running") stay as
+    returned results through handleResult; only infrastructure failures
+    throw. try{}catch{} never undoes writes itself - it routes control
+    to the compensation writes that do.
+*/
