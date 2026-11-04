@@ -46,7 +46,9 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 - `src/components/Icons.tsx` — inline SVG icons (GitHub, sun/moon). No icon library on purpose. Header docs-toggle bars are CSS-drawn spans (currentColor), not glyphs, so no font's glyph coverage matters.
 - `src/lib/useDocsSidebar.tsx` — shared open/closed state for the docs sidebar (context: header toggle + DocsShell). Initial value: open at ≥960px, closed below; set once, resize doesn't override.
 - `src/components/DocsShell.tsx` — docs sidebar (drawer <960px with scrim + Esc close; persistent left rail ≥960px) + IntersectionObserver scroll-spy (bold active section) over the page's section ids.
-- `src/App.tsx` — header is sticky + auto-hide: hidden while scrolling down (rAF-coalesced, >4px delta past 120px scroll), revealed on scroll-up, scrollY < 120, or pointer within 40px of the top edge. Docs toggle renders left of the pill nav only on `#/docs`.
+- `src/lib/useDocsSidebar.tsx` — shared open/closed state for the docs sidebar (context: floating hamburger + DocsShell). Initial value: open at ≥960px, closed below; set once, resize doesn't override.
+- `src/components/DocsShell.tsx` — docs sidebar (drawer <960px with scrim + Esc close; persistent left rail ≥960px) + IntersectionObserver scroll-spy (bold active section) over the page's section ids. Mounted only inside the Docs page.
+- `src/App.tsx` — `SiteHeader` is a plain in-flow bar (brand left, icons right). `FloatingNav` is a transparent fixed container holding the PillNav centered (`1fr auto 1fr`, explicit columns — the pill does not move when the hamburger mounts) that slides up on scroll-down and back on scroll-up / top-page / pointer-near-top (rAF-coalesced, >4px delta past 120px scroll; pointer within 40px). The docs hamburger renders only on `#/docs`, left of the pill.
 - `src/pages/` — Home, Gameplay, Docs. Page components remount per navigation (`key={route}`) so ascii-reveal decodes in again.
 - `src/content/docs.md` — markdown source for the docs area. Authored plain; rendered by marked at module load (`import ...?raw`).
 - `src/lib/markdown.ts` — marked (v18, token-object renderer API) config: H2 → slug id, fenced code → terminal window, http(s) links → new tab. `docHeadings()` extracts H2s so the sidebar lists them automatically.
@@ -62,7 +64,7 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 ## Docs area conventions (`#/docs`)
 
 - **Adding docs = writing markdown.** Add/extend H2 sections in `src/content/docs.md`; the sidebar picks them up via `docHeadings()` — no component or CSS edits needed.
-- **Sidebar open state is shared** (`useDocsSidebar`): the header button (left of the pill nav) and DocsShell flip the same boolean. Jumping closes it only below 960px (overlay drawer); the rail persists on wide screens.
+- **Sidebar open state is shared** (`useDocsSidebar`): the floating hamburger (left of the pill nav, `#/docs` only) and DocsShell flip the same boolean. Jumping closes it only below 960px (overlay drawer); the rail persists on wide screens.
 - Keep the `DOC_SECTIONS` list in `Docs.tsx` in sync with JSX section ids (`stack`, `api`, `repo`) if you add headings outside the markdown.
 - Interactive sidebar chrome carries `data-ascii="skip"`; the article decodes in through the wrapping `<AsciiReveal preset="decode">` (lazy below the fold).
 - **Section anchors are ids, not hrefs.** The hash router owns `location.hash`, so sidebar links must `scrollIntoView` to the slugged H2 id (as DocsShell does) — never navigate via `href="#slug"`, which would clobber the route.
