@@ -25,17 +25,22 @@ Everything color- and type-related is tokenized in [`src/theme/theme.ts`](src/th
 |-------|----------|
 | [`#/`](https://tanishworks.github.io/tagg/) | Hero + CTA, four feature cards |
 | `#/gameplay` | Hunter/hider roles, a round step-by-step |
-| `#/docs` | Lobby HTTP endpoints (terminal window), stack cards, repo map |
+| `#/docs` | Stack cards, endpoint/repo terminals + the docs area: markdown-rendered reference with a toggle drawer sidebar |
 
 Pill nav centered at the top; the active indicator slides between tabs (DOM-measured, animated transform). GitHub + theme-toggle icons sit top-right.
+
+## Docs
+
+The `#/docs` reference is authored as plain markdown in `src/content/docs.md` (imported with Vite's `?raw`), rendered once at load by `src/lib/markdown.ts` using `marked`. The custom renderer maps markdown onto site elements: H2s get slug ids for the sidebar and `docHeadings()` extracts them so the sidebar updates when the markdown does, fenced code blocks become terminal windows, and external links get `target="_blank"`. The drawer + scroll-spy UI lives in `src/components/DocsShell.tsx`; adding a doc section means editing the markdown file — no markup needed.
 
 ## Structure
 
 ```
 src/
 ├── theme/            # tokens + ThemeProvider/useTheme (all colors live here)
-├── lib/              # hash router + constants
-├── components/       # PillNav, Icons
+├── content/          # docs.md — markdown source for the docs area
+├── lib/              # hash router + markdown renderer + font gate
+├── components/       # PillNav, Icons, DocsShell (docs drawer)
 ├── pages/            # Home, Gameplay, Docs
 ├── App.tsx           # layout: header, pages, footer
 └── index.css         # styles (consumes only theme CSS variables)
