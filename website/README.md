@@ -54,7 +54,7 @@ npm run deploy    # build + push dist/ to the gh-pages branch
 ## Hosting
 
 GitHub Pages serves the `gh-pages` branch (root):
-- Automatic: `.github/workflows/deploy-website.yml` on pushes to `main`.
+- Automatic: `.github/workflows/deploy-website.yml` on pushes to `main` that change build inputs or the workflow (`README`/`AGENTS.md` edits don't rebuild the site).
 - Manual: `npm run deploy` (from `website/`).
 
 Routes are hash-based (`#/#/`, `#/gameplay`, `#/docs`) so pages work on GitHub Pages without rewrite rules; the Vite `base` `/tagg/` in `vite.config.ts` matches the Pages URL.
