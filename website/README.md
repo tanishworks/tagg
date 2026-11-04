@@ -15,7 +15,7 @@ Monochrome, terminal-flavored minimalism:
   | Display | Press Start 2P | Hero titles, CTAs, section kickers, card titles, step numbers, brand |
   | Body / UI | Inter | Paragraphs, pill-nav labels, section headings, footer |
   | Terminal | JetBrains Mono | Terminal windows, `//` eyebrows, card indexes, decode-glyph effect |
-- **Motion** — the `ascii-reveal` library decodes content in through a character grid: hero uses the `terminal` preset's cinematic wave, cards use `decode` + `data-ascii="surface"`. A slow gray gradient drifts behind everything. Both respect `prefers-reduced-motion`.
+- **Motion** — the `ascii-reveal` library decodes content in through a character grid: hero uses the `terminal` preset's cinematic wave, cards use `decode` + `data-ascii="surface"`. A slow gray gradient drifts behind everything, with a static film-grain overlay (SVG turbulence, strength from the `--noise-opacity` token). Both respect `prefers-reduced-motion`.
 
 Everything color- and type-related is tokenized in [`src/theme/theme.ts`](src/theme/theme.ts) and published to CSS variables from there — no component knows a hex value.
 
