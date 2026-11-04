@@ -39,12 +39,19 @@ The `#/docs` reference is authored as plain markdown in `src/content/docs.md` (i
 src/
 ├── theme/            # tokens + ThemeProvider/useTheme (all colors live here)
 ├── content/          # docs.md — markdown source for the docs area
-├── lib/              # hash router + markdown renderer + font gate
-├── components/       # PillNav, Icons, DocsShell (docs drawer)
+├── lib/              # hash router, markdown renderer, sidebar state, font gate
+├── components/       # PillNav, Icons, DocsShell (docs sidebar)
 ├── pages/            # Home, Gameplay, Docs
-├── App.tsx           # layout: header, pages, footer
+├── App.tsx           # header, FloatingNav (pill + hamburger), pages, footer
 └── index.css         # styles (consumes only theme CSS variables)
 ```
+
+## Architecture notes
+
+- **Floating pill nav** — the pill lives in a transparent fixed container with a `1fr auto 1fr` grid, so the pill stays pixel-identical center-screen whether the docs hamburger is present. It hides on scroll-down, returns on scroll-up / page top / pointer-near-top (rAF-coalesced scroll check).
+- **Docs sidebar state** is one React context (`src/lib/useDocsSidebar.tsx`) shared by the floating hamburger and the sidebar: overlay drawer below 960px, persistent left rail above; chosen once at mount by viewport width.
+- **Docs areas build themselves** — markdown `H2` = category (auto-numbered kicker), `H3` = slugged section; sidebar + scroll-spy derive from the markdown, not components.
+- **Pages remount on navigation** (`key={route}`) so ascii-reveal decodes in again; content is held until webfonts are verified loaded (`useFontsReady`) or a 2.5s fallback fires, so reveals measure in the final font.
 
 ## Scripts
 
