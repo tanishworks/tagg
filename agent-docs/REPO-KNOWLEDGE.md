@@ -12,6 +12,7 @@
 
 - `tagg-apis/` — Cloudflare Worker backend (Hono + Durable Objects + Supabase). **Primary area of active development.**
 - `mobile/` — Expo React Native client (SDK ~58). Currently only the untouched Expo starter template.
+- `website/` — Vite + React (TS) project landing site, deployed to GitHub Pages (`gh-pages` branch) at https://tanishworks.github.io/tagg/. Monochrome terminal/pixel aesthetic. See its `README.md` + `AGENTS.md`.
 - `agent-docs/` — agent-facing docs: `ARCHITECTURE.md` (intended system design & game rules) and this file (`REPO-KNOWLEDGE.md`).
 - Root:
   - `package.json` — root scripts: `dev`/`deploy` = wrangler, `lint` = eslint. Deps: hono, wrangler, eslint, typescript.
@@ -57,6 +58,15 @@
 - `src/constants/theme.ts`, hooks, `global.css`, `assets/`.
 - `app.json` — name/slug `tagg`, scheme `tagg`, portrait, expo-router + splash plugins, `experiments: { typedRoutes, reactCompiler }`, web output `server`, EAS projectId set.
 
+## Frontend: `website/`
+
+- **Purpose:** project landing site (features, gameplay, docs). Static, no connection to the live API yet.
+- **Stack:** Vite 8 + React 19 + TypeScript, `ascii-reveal` ^0.3 (hero/cards decode animation), Inter + JetBrains Mono + Press Start 2P fonts, oxlint. Deploys via `gh-pages` npm script and `.github/workflows/deploy-website.yml` (push to `main` with `website/**` changes → builds to `gh-pages` branch).
+- **Pages:** Home (`#/`), Gameplay (`#/gameplay`), Docs (`#/docs`) — hash routing (`src/lib/useHashRoute.ts`), chosen because Pages can't rewrite paths. Base path `/tagg/` in `vite.config.ts` must match the Pages URL.
+- **Theme system:** every color/font token in `src/theme/theme.ts` (`ThemePalette` dark/light + `FONT_TOKENS`), published to `:root` CSS variables by `ThemeProvider`; components consume variables or `useTheme()`. Rules: never hardcode colors/fonts; monochrome only. Follows OS `prefers-color-scheme` unless the visitor toggled (localStorage `tagg-site-theme`).
+- **Key components:** `PillNav` (sliding active indicator, DOM-measured), `Icons` (GitHub + theme toggle).
+- **Drift/consistency:** docs content in `website/src/pages` mirrors `agent-docs` at time of writing (lobby endpoints, roles) — update site copy when the API/game rules change.
+
 ## Architecture notes (design intent vs. current code)
 
 - Intended: Worker (Hono) gateway → Durable Object `LobbyRoom` (in-memory live state) → Supabase (Auth + Postgres).
@@ -80,14 +90,16 @@
 
 - `tagg-apis/AGENTS.md`: Cloudflare Workers — fetch **current** docs before Workers/DO/Supabase work; Local Explorer endpoints; `wrangler dev/deploy/types`; error 1102 CPU/mem limits.
 - `mobile/AGENTS.md`: Expo SDK ~58 — fetch versioned docs before writing Expo code; use `npx expo install`; Expo Router; `ios/`+`android/` absent → generated (never hand-edit); Expo Go limited to bundled modules.
+- `website/AGENTS.md`: Vite/React site — all colors & fonts are tokens in `src/theme/theme.ts` (never hardcode); 2-space style + oxlint (root Prettier 4-space doesn't apply); hash routes; deploys to `gh-pages` via CI on `main`; the two hex fallbacks in `website/index.html` must stay in sync with `theme.ts`.
 
 ## Conventions
 
-- Prettier: `tabWidth: 4`, spaces (no tabs).
-- ESLint: TS files only, `js.recommended` + `ts.recommended`, `@typescript-eslint/no-unused-vars: warn`.
+- Prettier: `tabWidth: 4`, spaces (no tabs). **Applies to root/`tagg-apis`/`agent-docs`; `website/` uses Vite's own 2-space style + oxlint.**
+- ESLint: TS files only, `js.recommended` + `ts.recommended`, `@typescript-eslint/no-unused-vars: warn`. `website/` uses oxlint instead (`.oxlintrc.json`).
 
 ## Suggested next steps (from here)
 
 1. Implement `setCurrentLobbyID` + finish backend Supabase integration step by step.
 2. Build client app in `mobile/`.
-3. Production, releases, branches.
+3. Keep `website/` copy in sync with API/game-rule changes (it documents the lobby endpoints and roles).
+4. Production, releases, branches.
