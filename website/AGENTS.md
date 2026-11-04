@@ -45,6 +45,9 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 - `src/components/PillNav.tsx` — sliding active indicator, measured from the DOM (`offsetLeft/offsetWidth`). Re-measures on: active-tab change, window resize, `document.fonts.ready` (font swap shifts widths). Adding a nav page = entry in `ROUTES` + `App.tsx` `PAGES`/`NAV_ITEMS`.
 - `src/components/Icons.tsx` — inline SVG icons (GitHub, sun/moon). No icon library on purpose.
 - `src/pages/` — Home, Gameplay, Docs. Page components remount per navigation (`key={route}`) so ascii-reveal decodes in again.
+- `src/content/docs.md` — markdown source for the docs area. Authored plain; rendered by marked at module load (`import ...?raw`).
+- `src/lib/markdown.ts` — marked (v18, token-object renderer API) config: H2 → slug id, fenced code → terminal window, http(s) links → new tab. `docHeadings()` extracts H2s so the sidebar lists them automatically.
+- `src/components/DocsShell.tsx` — docs drawer (`[CONTENTS]` toggle, scrim + Esc close) + IntersectionObserver scroll-spy over the page's section ids.
 - `src/index.css` — all styling; sections commented. Monochrome only.
 
 ## ascii-reveal conventions (`npm i ascii-reveal`, docs: https://quanhoangindex.github.io/ascii-reveal/)
@@ -53,6 +56,14 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 - Card grids: one `<AsciiReveal preset="decode">` per section; cards carry `data-ascii="surface"`; links/buttons `data-ascii="fade"`.
 - `data-ascii="skip"` must be used for anything that must stay interactive immediately (e.g. terminal window chrome rows).
 - Pages remount on navigation → one decode wave per visit. Do not fight this; it's intended.
+
+## Docs area conventions (`#/docs`)
+
+- **Adding docs = writing markdown.** Add/extend H2 sections in `src/content/docs.md`; the sidebar picks them up via `docHeadings()` — no component or CSS edits needed.
+- **Section anchors are ids, not hrefs.** The hash router owns `location.hash`, so sidebar links must `scrollIntoView` to the slugged H2 id (as DocsShell does) — never navigate via `href="#slug"`, which would clobber the route.
+- Keep the `DOC_SECTIONS` list in `Docs.tsx` in sync with JSX section ids (`stack`, `api`, `repo`) if you add headings outside the markdown.
+- Interactive drawer/toolbar parts carry `data-ascii="skip"`; the article decodes in through the wrapping `<AsciiReveal preset="decode">` (lazy below the fold).
+- New markdown elements (best effort): if you use a block type the CSS doesn't style yet (e.g. `hr`), add a `.docs-article` rule consuming tokens only.
 
 ## Gotchas
 

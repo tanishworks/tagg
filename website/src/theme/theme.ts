@@ -39,6 +39,8 @@ export interface ThemePalette {
     noiseOpacity: number
     /** Grain tile size in px — bigger = larger (and slightly softer) specks. Dark keeps the SVG's native 160px; light stretches up for visibility. */
     noiseSize: number
+    /** Overlay veil behind floating panels (docs drawer). On the dark bg it barely registers — the drawer separates via surface + border — but it matters in light mode. */
+    scrim: string
 }
 
 const palettes: Record<ThemeMode, ThemePalette> = {
@@ -57,6 +59,7 @@ const palettes: Record<ThemeMode, ThemePalette> = {
         gradientTintDeep: '#1c1c1c',
         noiseOpacity: 0.15,
         noiseSize: 160,
+        scrim: 'rgba(0, 0, 0, 0.6)',
     },
     light: {
         bg: '#ffffff',
@@ -73,6 +76,7 @@ const palettes: Record<ThemeMode, ThemePalette> = {
         gradientTintDeep: '#e6e6e6',
         noiseOpacity: 0.12,
         noiseSize: 256,
+        scrim: 'rgba(0, 0, 0, 0.32)',
     },
 }
 
@@ -107,6 +111,7 @@ const cssVarNames: { [K in keyof ThemePalette]: string } = {
     gradientTintDeep: '--gradient-tint-deep',
     noiseOpacity: '--noise-opacity',
     noiseSize: '--noise-size',
+    scrim: '--color-scrim',
 }
 
 const fontVarNames: { [K in keyof typeof FONT_TOKENS]: string } = {
