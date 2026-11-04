@@ -35,6 +35,8 @@ export interface ThemePalette {
   /** Moving-gradient solid tint stops. */
   gradientTint: string
   gradientTintDeep: string
+  /** Film-grain strength over the moving gradient (0–1). Light shows dark speckle more strongly, so it's dialed down. */
+  noiseOpacity: number
 }
 
 const palettes: Record<ThemeMode, ThemePalette> = {
@@ -51,6 +53,7 @@ const palettes: Record<ThemeMode, ThemePalette> = {
     glowMid: 'rgba(255, 255, 255, 0.10)',
     gradientTint: '#101010',
     gradientTintDeep: '#1c1c1c',
+    noiseOpacity: 0.05,
   },
   light: {
     bg: '#ffffff',
@@ -65,6 +68,7 @@ const palettes: Record<ThemeMode, ThemePalette> = {
     glowMid: 'rgba(0, 0, 0, 0.05)',
     gradientTint: '#f0f0f0',
     gradientTintDeep: '#e6e6e6',
+    noiseOpacity: 0.04,
   },
 }
 
@@ -97,6 +101,7 @@ const cssVarNames: { [K in keyof ThemePalette]: string } = {
   glowMid: '--gradient-glow-mid',
   gradientTint: '--gradient-tint',
   gradientTintDeep: '--gradient-tint-deep',
+  noiseOpacity: '--noise-opacity',
 }
 
 const fontVarNames: { [K in keyof typeof FONT_TOKENS]: string } = {
@@ -110,7 +115,7 @@ export function themeToCssVars(mode: ThemeMode): CSSProperties {
   const entries: TokenToVar[] = []
 
   for (const key of Object.keys(palette(mode)) as (keyof ThemePalette)[]) {
-    entries.push({ name: cssVarNames[key], value: palette(mode)[key] })
+    entries.push({ name: cssVarNames[key], value: String(palette(mode)[key]) })
   }
   for (const key of Object.keys(FONT_TOKENS) as (keyof typeof FONT_TOKENS)[]) {
     entries.push({ name: fontVarNames[key], value: FONT_TOKENS[key] })
