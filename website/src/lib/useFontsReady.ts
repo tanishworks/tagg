@@ -5,23 +5,25 @@ import { FONT_TOKENS } from '../theme/theme'
  * Gate for ascii-reveal content.
  *
  * ascii-reveal takes ONE layout measurement when a reveal starts. If webfonts
- * land after that (Google Fonts, display=swap), the scramble draws in the
+ * land after that (fonts.css, display=swap), the scramble draws in the
  * fallback face and text visibly swaps mid-animation. So we resolve only when
  * every family/weight used at first paint is actually loaded.
  *
  * Sequence:
- * 1. Wait for the Google Fonts stylesheet (`fonts.ready` alone can resolve
- *    before a still-loading stylesheet registers its @font-face rules).
+ * 1. Wait for the fonts stylesheet (`fonts.ready` alone can resolve before a
+ *    still-loading stylesheet registers its @font-face rules).
  * 2. Explicitly load each family/weight (weights change layout metrics, so
  *    loading only 400 is not enough).
  * 3. `document.fonts.ready`.
  *
- * The whole wait is capped by FALLBACK_TIMEOUT_MS so a blocked font CDN can
- * never leave the site blank permanently — the fallback font is then shown.
+ * Fonts are self-hosted (public/fonts), so the normal path here is a few
+ * same-origin round trips — usually over before first paint. The whole wait
+ * is still capped by FALLBACK_TIMEOUT_MS so an unusual failure can never
+ * leave the site blank permanently — the fallback font is then used.
  */
 
-const STYLESHEET_SELECTOR = 'link[href*="fonts.googleapis.com"]'
-const FALLBACK_TIMEOUT_MS = 3500
+const STYLESHEET_SELECTOR = 'link[href="fonts.css"]'
+const FALLBACK_TIMEOUT_MS = 2500
 
 /** Family names are derived from FONT_TOKENS — the single source of truth. */
 const weightsByFamily = new Map<string, number[]>([

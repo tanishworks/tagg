@@ -56,7 +56,8 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 
 ## Gotchas
 
-- ascii-reveal measures ONCE per reveal, so page content is gated behind `useFontsReady()` (`src/lib/useFontsReady.ts`): reveals start only after the Google Fonts stylesheet is on, `document.fonts.ready` resolves, and every family/weight used at first paint is explicitly `fonts.load()`ed. If you add a font weight/family for first-paint text, update the `weightsByFamily` map in that hook. A ~3.5 s fallback unblocks offline/blocked-CDN environments (fallback fonts are then used). While waiting, `<AsciiSkeleton>` shows in `App.tsx`.
+- ascii-reveal measures ONCE per reveal, so page content is gated behind `useFontsReady()` (`src/lib/useFontsReady.ts`): reveals start only after the local `fonts.css` is loaded, `document.fonts.ready` resolves, and every family/weight used at first paint is explicitly `fonts.load()`ed. If you add a font weight/family for first-paint text, update the `weightsByFamily` map in that hook **and** add a `@font-face` in `public/fonts.css`. A ~2.5 s fallback unblocks failed font loads (fallback fonts are then used). While waiting, `<AsciiSkeleton>` shows in `App.tsx`.
+- Fonts are **self-hosted**: `public/fonts/*.woff2` (latin subset) + `public/fonts.css`, sourced from the `@fontsource/*` devDependencies (update by reinstalling and re-copying files; licenses `public/fonts/*-OFL.txt`). The four critical files are preloaded in `index.html` (Inter 400/600, JetBrains Mono 400, Press Start 2P 400); no third-party font requests exist, so do not reintroduce Google Fonts links.
 
 - Theme variables live on `:root` after React mounts; the two hex fallbacks in CSS (`html[data-theme=...]`) cover the pre-JS paint only.
 - `<StrictMode>` double-mounts effects in dev — ascii-reveal reveals twice in dev is normal, production is single-pass.
