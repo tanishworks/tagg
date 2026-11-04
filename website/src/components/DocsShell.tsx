@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useDocsSidebar } from '../lib/useDocsSidebar'
 
 export interface DocsSection {
     id: string
@@ -13,19 +14,25 @@ interface DocsShellProps {
 }
 
 /**
- * The docs area chrome: a toggle button that opens a drawer sidebar listing
- * every section, plus the markdown-rendered article. All interactive parts
- * carry `data-ascii="skip"` so they are usable immediately while the article
- * still decodes in through the wrapping AsciiReveal.
+ * The docs area chrome: a toggleable sidebar listing every section, plus the
+ * markdown-rendered article.
+ *
+ * Open state comes from `useDocsSidebar` so the header toggle (left of the
+ * pill nav) and this sidebar share one source of truth. Below the wide
+ * breakpoint (960px) the sidebar is a fixed drawer with a scrim; on wide
+ * screens it is a persistent left rail and the page content shifts right.
+ *
+ * The sidebar is interactive immediately (`data-ascii="skip"`) while the
+ * article decodes in through the wrapping AsciiReveal.
  *
  * Section links scroll (scrollIntoView) instead of navigating — the hash
  * router owns location.hash, so anchors stay purely decorative ids.
  */
 export function DocsShell({ sections, html }: DocsShellProps) {
-    const [open, setOpen] = useState(false)
+    const { open, setOpen } = useDocsSidebar()
     const [active, setActive] = useState<string>(sections[0]?.id ?? '')
 
-    // Esc closes the drawer while it is open.
+    // Esc closes the sidebar while it is open.
     useEffect(() => {
         if (!open) {
             return
@@ -37,10 +44,10 @@ export function DocsShell({ sections, html }: DocsShellProps) {
         }
         document.addEventListener('keydown', onKeyDown)
         return () => document.removeEventListener('keydown', onKeyDown)
-    }, [open])
+    }, [open, setOpen])
 
     // Scroll-spy: whichever section heading sits in the top band of the
-    // viewport is highlighted in the sidebar.
+    // viewport is highlighted (bold) in the sidebar.
     useEffect(() => {
         const headings = sections
             .map((section) => document.getElementById(section.id))
@@ -71,26 +78,15 @@ export function DocsShell({ sections, html }: DocsShellProps) {
 
     const jumpTo = (id: string) => {
         document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        setOpen(false)
+        // On narrow screens the sidebar is an overlay drawer — close it after
+        // jumping. On wide screens it is a persistent rail; keep it open.
+        if (!window.matchMedia('(min-width: 960px)').matches) {
+            setOpen(false)
+        }
     }
-
-    const toggle = () => setOpen((value) => !value)
 
     return (
         <>
-            <div className="docs-toolbar" data-ascii="skip">
-                <button
-                    type="button"
-                    className="docs-toggle"
-                    onClick={toggle}
-                    aria-expanded={open}
-                    aria-controls="docs-drawer"
-                >
-                    [CONTENTS]
-                </button>
-                <span className="docs-hint">// {sections.length} sections</span>
-            </div>
-
             <div
                 className="docs-scrim"
                 data-open={open ? 'true' : 'false'}

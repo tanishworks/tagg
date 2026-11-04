@@ -27,11 +27,11 @@ Everything color- and type-related is tokenized in [`src/theme/theme.ts`](src/th
 | `#/gameplay` | Hunter/hider roles, a round step-by-step |
 | `#/docs` | Stack cards, endpoint/repo terminals + the docs area: markdown-rendered reference with a toggle drawer sidebar |
 
-Pill nav centered at the top; the active indicator slides between tabs (DOM-measured, animated transform). GitHub + theme-toggle icons sit top-right.
+Pill nav centered at the top; the active indicator slides between tabs (DOM-measured, animated transform). GitHub + theme-toggle icons sit top-right. The header is sticky and auto-hides while scrolling down — it reappears on scroll-up, near the page top, or when the pointer nears the top edge.
 
 ## Docs
 
-The `#/docs` reference is authored as plain markdown in `src/content/docs.md` (imported with Vite's `?raw`), rendered once at load by `src/lib/markdown.ts` using `marked`. The custom renderer maps markdown onto site elements: H2s get slug ids for the sidebar and `docHeadings()` extracts them so the sidebar updates when the markdown does, fenced code blocks become terminal windows, and external links get `target="_blank"`. The drawer + scroll-spy UI lives in `src/components/DocsShell.tsx`; adding a doc section means editing the markdown file — no markup needed.
+The `#/docs` reference is authored as plain markdown in `src/content/docs.md` (imported with Vite's `?raw`), rendered once at load by `src/lib/markdown.ts` using `marked`. The custom renderer maps markdown onto site elements: H2s get slug ids for the sidebar and `docHeadings()` extracts them so the sidebar updates when the markdown does, fenced code blocks become terminal windows, and external links get `target="_blank"`. The sidebar + scroll-spy UI lives in `src/components/DocsShell.tsx`; its shared open state lives in `src/lib/useDocsSidebar.tsx` (the header toggle button, left of the pill nav, is rendered by `App.tsx`). Below 960px the sidebar is an overlay drawer (closed by default, closes after a jump); at 960px+ it is a persistent left rail (open by default, toggled by the header button) and the page content shifts right while open. The current section is bolded by the IntersectionObserver scroll-spy. Adding a doc section means editing the markdown file — no markup needed.
 
 ## Structure
 
