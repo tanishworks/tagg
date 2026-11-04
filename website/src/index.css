@@ -729,6 +729,16 @@ button {
   font-weight: 700;
 }
 
+/* Two-level sidebar: categories stand out, sections nest under them. */
+.docs-section-link[data-level='0'] {
+  font-weight: 700;
+}
+
+.docs-section-link[data-level='1'] {
+  padding-left: 2.2rem;
+  font-size: 0.8rem;
+}
+
 .docs-section-index {
   flex-shrink: 0;
   font-family: var(--font-mono);
@@ -743,24 +753,24 @@ button {
   max-width: 46rem;
 }
 
-.docs-article .docs-h2 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--color-fg);
-  margin: 2.75rem 0 1rem;
+/* Category separator — the section-head convention applied inside the
+ * markdown article, separating the broad docs categories. */
+.docs-article .docs-cat-head {
+  margin: 3.5rem 0 1.5rem;
   scroll-margin-top: 4.5rem;
 }
 
-.docs-article .docs-h2:first-child {
+.docs-article .docs-cat-head:first-child {
   margin-top: 0;
 }
 
+/* Section headings inside a category (markdown H3). */
 .docs-article .docs-h3 {
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--color-fg);
-  margin: 1.75rem 0 0.75rem;
+  margin: 2rem 0 0.75rem;
+  scroll-margin-top: 4.5rem;
 }
 
 .docs-article p {

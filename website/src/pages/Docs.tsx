@@ -1,5 +1,6 @@
 import { AsciiReveal } from 'ascii-reveal'
 import { DocsShell } from '../components/DocsShell'
+import type { DocsSection } from '../components/DocsShell'
 import { useDocsSidebar } from '../lib/useDocsSidebar'
 import { docHeadings, renderMarkdown } from '../lib/markdown'
 import docsSource from '../content/docs.md?raw'
@@ -34,11 +35,14 @@ const ENDPOINT_LINES = [
 // Sidebar = the three JSX sections above + every H2 in the markdown.
 const DOCS_HTML = renderMarkdown(docsSource)
 
-const DOC_SECTIONS = [
-    { id: 'stack', label: 'Under the hood' },
-    { id: 'api', label: 'Lobby endpoints' },
-    { id: 'repo', label: 'File structure' },
-    ...docHeadings(docsSource).map((heading) => ({ id: heading.id, label: heading.text })),
+const DOC_SECTIONS: DocsSection[] = [
+    { id: 'stack', label: 'Under the hood', level: 0 },
+    { id: 'api', label: 'Lobby endpoints', level: 0 },
+    ...docHeadings(docsSource).map((heading): DocsSection => ({
+        id: heading.id,
+        label: heading.text,
+        level: heading.depth === 2 ? 0 : 1,
+    })),
 ]
 
 export function Docs() {
@@ -48,7 +52,7 @@ export function Docs() {
             <section className="hero hero-compact">
                 <AsciiReveal preset="terminal" duration="cinematic">
                     <p className="eyebrow" data-ascii="fade">
-            // docs.md
+            // DOCS.md
                     </p>
                     <h1 className="display display-small">DOCUMENTATION</h1>
                 </AsciiReveal>
@@ -100,30 +104,6 @@ export function Docs() {
 
 
             <section className="section">
-                <header className="section-head">
-                    <span className="section-kicker">03: // Repository</span>
-                    <h2 className="section-title" id="repo">File structure</h2>
-                </header>
-                <AsciiReveal>
-                    <div className="terminal" data-ascii="surface">
-                        <div className="terminal-bar" data-ascii="skip">
-                            <span className="terminal-dot" />
-                            <span className="terminal-dot" />
-                            <span className="terminal-dot" />
-                            <span className="terminal-label">tagg — zsh</span>
-                        </div>
-                        <pre>
-                            {'npm i github:tanishworks/tagg\n├── mobile/           # expo client (in development)\n├── tagg-apis/        # worker api source\n└── agent-docs/       # architecture & rules'}
-                        </pre>
-                    </div>
-                </AsciiReveal>
-            </section>
-
-            <section className="section">
-                <header className="section-head">
-                    <span className="section-kicker">04: // REFERENCE</span>
-                    <h2 className="section-title">The docs</h2>
-                </header>
                 <AsciiReveal preset="decode">
                     <DocsShell sections={DOC_SECTIONS} html={DOCS_HTML} />
                 </AsciiReveal>

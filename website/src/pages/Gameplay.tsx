@@ -25,7 +25,7 @@ export function Gameplay() {
             <section className="hero hero-compact">
                 <AsciiReveal preset="terminal" duration="cinematic">
                     <p className="eyebrow" data-ascii="fade">
-            // gameplay.md
+            // LAUNCH.md
                     </p>
                     <h1 className="display display-small">HOW TO PLAY</h1>
                 </AsciiReveal>
