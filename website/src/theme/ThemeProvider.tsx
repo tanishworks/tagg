@@ -78,12 +78,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 }
 
 /** Access theme colors + mode. Every component colors itself through this. */
+// Provider + hook intentionally share one file (canonical React context
+// pattern); Fast Refresh degrades slightly on context edits — accepted.
+// oxlint-disable-next-line react/only-export-components
 export function useTheme(): ThemeContextValue {
   const value = useContext(ThemeContext)
   if (!value) throw new Error('useTheme must be used inside <ThemeProvider>')
   return value
 }
 
-// Re-export so callers can import theme helpers from one place.
-export { themeToCssVars }
-export type { ThemeMode }
+// Access theme helpers directly from './theme' — this file only exports the
+// provider + hook (an oxlint fast-refresh rule requires component-only files).
