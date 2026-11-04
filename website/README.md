@@ -9,7 +9,7 @@ Vite + React + TypeScript. Source lives in `website/` of the [tagg repo](https:/
 Monochrome, terminal-flavored minimalism:
 
 - **Color** — pure black/pure white backgrounds and text, with neutral grays for hierarchy. No hue anywhere; handlers, glows and gradients are gray alphas. Two modes: dark (default) and light.
-- **Type** — three-tier hierarchy:
+- **Type** — three-tier hierarchy (all self-hosted in `public/fonts`):
   | Tier | Font | Used for |
   |------|------|----------|
   | Display | Press Start 2P | Hero titles, CTAs, section kickers, card titles, step numbers, brand |

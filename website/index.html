@@ -10,13 +10,41 @@
     />
     <title>Tagg — real-world tag</title>
 
-    <!-- Body/UI: Inter · Terminal: JetBrains Mono · Display: Press Start 2P -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Self-hosted fonts (public/fonts + fonts.css, OFL via @fontsource).
+      Preload the files above the fold uses so downloads start at head-parse,
+      ahead of the stylesheet → CSS parse → text paint chain.
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="fonts/inter-latin-400-normal.woff2"
+      fetchpriority="high"
     />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="fonts/inter-latin-600-normal.woff2"
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="fonts/jetbrains-mono-latin-400-normal.woff2"
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      crossorigin
+      href="fonts/press-start-2p-latin-400-normal.woff2"
+    />
+    <link rel="stylesheet" href="fonts.css" />
 
     <!--
       Set the theme attribute before first paint so the page never flashes the
