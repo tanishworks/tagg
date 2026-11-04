@@ -32,7 +32,7 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 
 ## Deployment
 
-- CI: `.github/workflows/deploy-website.yml` builds and publishes to `gh-pages` on every push to `main` touching website **build inputs** (`src/`, `public/`, `index.html`, `vite.config.ts`, tsconfigs, package/lock files) or the workflow file itself. Markdown-only edits inside `website/` do not trigger a deploy.
+- CI: `.github/workflows/deploy-website.yml` builds and publishes to `gh-pages` on every push to `main` touching website **build inputs** (`src/`, `public/`, `index.html`, `vite.config.ts`, tsconfigs, package/lock files) or the workflow file itself. Note this includes markdown **inside** `website/src/**` — `src/content/docs.md` edits deploy; markdown at `website/` root (README/AGENTS) does not.
 - Pages: repo setting → branch `gh-pages`, root.
 - `npm run deploy` and CI both push to `gh-pages`; running them simultaneously races on the same ref (two builds, one branch). Prefer CI; use the manual script only when CI is unavailable.
 - Hash routing (`#/#/`, `#/gameplay`, `#/docs`) is used instead of react-router **because** GitHub Pages can't rewrite unknown paths without a custom 404 hack.
@@ -78,6 +78,6 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 
 - Theme variables live on `:root` after React mounts; the two hex fallbacks in CSS (`html[data-theme=...]`) cover the pre-JS paint only.
 - `<StrictMode>` double-mounts effects in dev — ascii-reveal reveals twice in dev is normal, production is single-pass.
-- `website/` uses **2-space style + oxlint** (Vite conventions). The root Prettier `tabWidth: 4` does not apply here.
+- **Indentation:** TypeScript files use **4-space** (matches the root Prettier `tabWidth: 4`; adopted across `theme.ts`, pages and new files). `index.css` stays **2-space** as first written. Linting is oxlint (`.oxlintrc.json`); keep those two styles per file type as written.
 - `Press Start 2P` renders heavy; keep it clamp()-sized and reserve it for short strings.
 - If you bisect a "background is wrong" report, check that tokens are still published on `:root` in `ThemeProvider` — an earlier version published them on a div and the page stayed black in light mode.
