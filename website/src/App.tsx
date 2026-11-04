@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import type { ComponentType } from 'react'
 import { AsciiSkeleton } from 'ascii-reveal'
 import { ThemeProvider } from './theme/ThemeProvider'
+import { DocsSidebarProvider, useDocsSidebar } from './lib/useDocsSidebar'
 import { GITHUB_URL, useHashRoute } from './lib/useHashRoute'
 import type { Route } from './lib/useHashRoute'
 import { PillNav } from './components/PillNav'
@@ -24,11 +26,73 @@ const PAGES: Record<Route, ComponentType> = {
 
 function SiteHeader() {
   const { route, navigate } = useHashRoute()
+  const { open, setOpen } = useDocsSidebar()
+
+  // Auto-hide on scroll-down; reveal on scroll-up, near the page top, or
+  // when the pointer comes near the top edge of the screen. The scroll
+  // check is coalesced through requestAnimationFrame so it runs at most
+  // once per frame.
+  const [hidden, setHidden] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    let lastY = window.scrollY
+    let frame = 0
+    const onScroll = () => {
+      if (frame) return
+      frame = requestAnimationFrame(() => {
+        frame = 0
+        const y = window.scrollY
+        setScrolled(y > 8)
+        if (y < 120) {
+          setHidden(false)
+        } else if (y > lastY + 4) {
+          setHidden(true)
+        } else if (y < lastY - 4) {
+          setHidden(false)
+        }
+        lastY = y
+      })
+    }
+    const onPointer = (event: PointerEvent) => {
+      if (event.clientY <= 40) setHidden(false)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    document.addEventListener('pointermove', onPointer)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      document.removeEventListener('pointermove', onPointer)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [])
+
   return (
-    <header className="site-header">
-      <a className="brand" href="#/">
-        TAGG
-      </a>
+    <header
+      className="site-header"
+      data-hidden={hidden ? 'true' : 'false'}
+      data-scrolled={scrolled ? 'true' : 'false'}
+    >
+      <div className="header-left">
+        <a className="brand" href="#/">
+          TAGG
+        </a>
+        {route === '/docs' && (
+          <button
+            type="button"
+            className="icon-button header-docs-toggle"
+            aria-label="Toggle docs contents"
+            aria-expanded={open}
+            aria-controls="docs-drawer"
+            onClick={() => setOpen((value) => !value)}
+          >
+            <span className="icon-bars" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </span>
+          </button>
+        )}
+      </div>
       <PillNav items={NAV_ITEMS} active={route} onChange={navigate} />
       <div className="header-actions">
         <GithubLink />
@@ -81,7 +145,9 @@ function Site() {
 export default function App() {
   return (
     <ThemeProvider>
-      <Site />
+      <DocsSidebarProvider>
+        <Site />
+      </DocsSidebarProvider>
     </ThemeProvider>
   )
 }

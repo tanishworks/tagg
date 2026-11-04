@@ -1,5 +1,6 @@
 import { AsciiReveal } from 'ascii-reveal'
 import { DocsShell } from '../components/DocsShell'
+import { useDocsSidebar } from '../lib/useDocsSidebar'
 import { docHeadings, renderMarkdown } from '../lib/markdown'
 import docsSource from '../content/docs.md?raw'
 
@@ -41,8 +42,9 @@ const DOC_SECTIONS = [
 ]
 
 export function Docs() {
+    const { open } = useDocsSidebar()
     return (
-        <>
+        <div className={'docs-page' + (open ? ' docs-open' : '')}>
             <section className="hero hero-compact">
                 <AsciiReveal preset="terminal" duration="cinematic">
                     <p className="eyebrow" data-ascii="fade">
@@ -126,6 +128,6 @@ export function Docs() {
                     <DocsShell sections={DOC_SECTIONS} html={DOCS_HTML} />
                 </AsciiReveal>
             </section>
-        </>
+        </div>
     )
 }
