@@ -72,9 +72,10 @@ export function palette(mode: ThemeMode): ThemePalette {
   return palettes[mode]
 }
 
-/** Typography tokens — terminal font for reading, pixel font for display. */
+/** Typography tokens — pixel for display, Inter for body/UI, mono for terminal accents. */
 export const FONT_TOKENS = {
   mono: '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
+  sans: '"Inter", system-ui, -apple-system, "Segoe UI", sans-serif',
   pixel: '"Press Start 2P", ui-monospace, SFMono-Regular, Menlo, monospace',
 } as const
 
@@ -100,6 +101,7 @@ const cssVarNames: { [K in keyof ThemePalette]: string } = {
 
 const fontVarNames: { [K in keyof typeof FONT_TOKENS]: string } = {
   mono: '--font-mono',
+  sans: '--font-sans',
   pixel: '--font-pixel',
 }
 

@@ -17,17 +17,24 @@ html[data-theme='light'] {
   color-scheme: light;
 }
 
-html,
-body {
+/* Theme variables are published on :root by ThemeProvider, so these fallback
+ * hexes only matter for the very first paint (data-theme is set by the inline
+ * script in index.html before any of this loads). */
+html {
   background-color: var(--color-bg, #000000);
 }
 
+html[data-theme='light'] {
+  background-color: var(--color-bg, #ffffff);
+}
+
 body {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.6;
   color: var(--color-fg);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -56,6 +63,14 @@ button {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+
+  /* ascii-reveal theming — derived from theme tokens so the character-grid
+   * effect stays monochrome instead of using the library's default accent. */
+  --ascii-accent: var(--color-fg);
+  --ascii-skeleton: var(--color-faint);
+  --ascii-glyph: var(--color-muted);
+  --ascii-flash: var(--color-fg);
+  --ascii-font: var(--font-mono);
 }
 
 .site-content {
@@ -111,12 +126,15 @@ button {
   }
 }
 
-/* Header ------------------------------------------------------------------ */
+/* Header ------------------------------------------------------------------
+ * Three-column grid so the pill nav is always dead center:
+ * brand | nav | actions.
+ */
 
 .site-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  flex-wrap: wrap;
   gap: 1rem;
   width: 100%;
   max-width: 72rem;
@@ -125,6 +143,7 @@ button {
 }
 
 .brand {
+  justify-self: start;
   font-family: var(--font-pixel);
   font-size: 0.8rem;
   text-decoration: none;
@@ -132,7 +151,7 @@ button {
 }
 
 .header-actions {
-  margin-left: auto;
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -202,10 +221,10 @@ button {
   border: none;
   border-radius: 999px;
   background: none;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.1em;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--color-on-fg-muted);
   white-space: nowrap;
   cursor: pointer;
@@ -234,6 +253,7 @@ button {
 
 .eyebrow {
   color: var(--color-muted);
+  font-family: var(--font-mono);
   font-size: 0.85rem;
   letter-spacing: 0.14em;
 }
@@ -432,6 +452,7 @@ button {
 .terminal-label {
   margin-left: 0.75rem;
   color: var(--color-faint);
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.1em;
 }
@@ -483,6 +504,8 @@ button {
 
 @media (max-width: 640px) {
   .site-header {
+    display: flex;
+    flex-wrap: wrap;
     padding-top: 1rem;
   }
 
@@ -490,6 +513,7 @@ button {
     order: 3;
     width: 100%;
     max-width: 100%;
+    justify-content: center;
     overflow-x: auto;
     scrollbar-width: none;
   }
