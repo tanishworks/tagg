@@ -61,7 +61,7 @@
 ## Frontend: `website/`
 
 - **Purpose:** project landing site (features, gameplay, docs). Static, no connection to the live API yet.
-- **Stack:** Vite 8 + React 19 + TypeScript, `ascii-reveal` ^0.3 (hero/cards decode animation), Inter + JetBrains Mono + Press Start 2P fonts, oxlint. Deploys via `gh-pages` npm script and `.github/workflows/deploy-website.yml` (push to `main` with `website/**` changes → builds to `gh-pages` branch).
+- **Stack:** Vite 8 + React 19 + TypeScript, `ascii-reveal` ^0.3 (hero/cards decode animation), Inter + JetBrains Mono + Press Start 2P fonts, oxlint. Deploys via `gh-pages` npm script and `.github/workflows/deploy-website.yml` (push to `main` with website build-input changes → builds to `gh-pages` branch).
 - **Pages:** Home (`#/`), Gameplay (`#/gameplay`), Docs (`#/docs`) — hash routing (`src/lib/useHashRoute.ts`), chosen because Pages can't rewrite paths. Base path `/tagg/` in `vite.config.ts` must match the Pages URL.
 - **Theme system:** every color/font token in `src/theme/theme.ts` (`ThemePalette` dark/light + `FONT_TOKENS`), published to `:root` CSS variables by `ThemeProvider`; components consume variables or `useTheme()`. Rules: never hardcode colors/fonts; monochrome only. Follows OS `prefers-color-scheme` unless the visitor toggled (localStorage `tagg-site-theme`).
 - **Key components:** `PillNav` (sliding active indicator, DOM-measured), `Icons` (GitHub + theme toggle).

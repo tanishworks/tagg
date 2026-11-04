@@ -32,7 +32,7 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 
 ## Deployment
 
-- CI: `.github/workflows/deploy-website.yml` builds and publishes to `gh-pages` on every push to `main` touching `website/**` or the workflow file.
+- CI: `.github/workflows/deploy-website.yml` builds and publishes to `gh-pages` on every push to `main` touching website **build inputs** (`src/`, `public/`, `index.html`, `vite.config.ts`, tsconfigs, package/lock files) or the workflow file itself. Markdown-only edits inside `website/` do not trigger a deploy.
 - Pages: repo setting → branch `gh-pages`, root.
 - `npm run deploy` and CI both push to `gh-pages`; running them simultaneously races on the same ref (two builds, one branch). Prefer CI; use the manual script only when CI is unavailable.
 - Hash routing (`#/#/`, `#/gameplay`, `#/docs`) is used instead of react-router **because** GitHub Pages can't rewrite unknown paths without a custom 404 hack.
