@@ -4,6 +4,8 @@ import { useDocsSidebar } from '../lib/useDocsSidebar'
 export interface DocsSection {
     id: string
     label: string
+    /** 0 = broad category (bold in the sidebar), 1 = section under it (indented). */
+    level: 0 | 1
 }
 
 interface DocsShellProps {
@@ -118,6 +120,7 @@ export function DocsShell({ sections, html }: DocsShellProps) {
                             key={section.id}
                             type="button"
                             className="docs-section-link"
+                            data-level={section.level}
                             data-active={active === section.id ? 'true' : undefined}
                             onClick={() => jumpTo(section.id)}
                         >

@@ -1,4 +1,6 @@
-## Overview
+## Concepts
+
+### Overview
 
 Tagg is a real-time, location-based game of tag — hide-and-seek style, played in lobbies from a phone. Players take `hunter` and `hider` roles, share live GPS coordinates, and try to survive the round.
 
@@ -8,7 +10,7 @@ The architecture splits work by temperature:
 - **Cold path (persistent)** — accounts, lobby membership, career stats live in Supabase Auth + Postgres and are touched only at lobby transitions.
 - **The Worker (Hono)** — the doorway between the two: HTTP routing, JWT validation, guard rails.
 
-## Lifecycle
+### Lifecycle
 
 A match flows through four phases:
 
@@ -17,7 +19,9 @@ A match flows through four phases:
 3. **Play** — the client streams coordinates to `LobbyRoom`; the Durable Object judges tags and broadcasts everyone's positions in memory at the edge.
 4. **Conclude** — a match summary (winner, per-player results) is written back to the database, and career wins update.
 
-## HTTP API
+## Reference
+
+### HTTP API
 
 Every request carries `Authorization: Bearer <supabase-access-token>`. The Worker validates it against Supabase's JWKS endpoint, then forwards your identity as a user-scoped client so all database access stays behind row-level security.
 
@@ -34,7 +38,9 @@ curl -X POST https://<worker-host>/lobby/join \
 - `GET /lobby/:id` returns the roster: players, host and running state.
 - Responses speak one dialect: `{"success": boolean, "message": string}`.
 
-## Running locally
+## Repository
+
+### Running locally
 
 ```bash
 # backend — Hono routes + LobbyRoom Durable Object
@@ -49,7 +55,7 @@ cd website && npm run dev        # vite
 
 The Worker expects `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` bindings. Schema, SQL migrations and RLS notes live in `agent-docs/SUPABASE.md`.
 
-## Project map
+### Project map
 
 ```
 mobile/        # expo react native client (in development)
