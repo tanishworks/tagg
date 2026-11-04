@@ -41,9 +41,29 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>(initialMode)
 
   useEffect(() => {
-    document.documentElement.dataset.theme = mode
+    const root = document.documentElement
+    root.dataset.theme = mode
+
+    // Publish the palette on :root — not on a component below it — so html,
+    // body and every fixed-position layer can read the same variables.
+    for (const [name, value] of Object.entries(themeToCssVars(mode))) {
+      if (typeof value === 'string') root.style.setProperty(name, value)
+    }
+
     writeStoredMode(mode)
   }, [mode])
+
+  // Follow the OS color-mode preference live, unless the visitor explicitly
+  // toggled on this device — the stored override wins.
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: light)')
+    const onChange = (event: MediaQueryListEvent) => {
+      if (readStoredMode()) return
+      setMode(event.matches ? 'light' : 'dark')
+    }
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [])
 
   const value = useMemo<ThemeContextValue>(
     () => ({

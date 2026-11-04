@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { ThemeProvider, themeToCssVars, useTheme } from './theme/ThemeProvider'
+import { ThemeProvider } from './theme/ThemeProvider'
 import { GITHUB_URL, useHashRoute } from './lib/useHashRoute'
 import type { Route } from './lib/useHashRoute'
 import { PillNav } from './components/PillNav'
@@ -47,15 +47,14 @@ function SiteFooter() {
   )
 }
 
-function Site() {
-  const { mode } = useTheme()
+export function Site() {
   const { route } = useHashRoute()
 
   // `key` remounts the page on every navigation so ascii-reveal decodes in again.
   const Page = PAGES[route] ?? Home
 
   return (
-    <div className="site" data-mode={mode} style={themeToCssVars(mode)}>
+    <div className="site">
       <div className="site-bg" aria-hidden="true" />
       <SiteHeader />
       <main className="site-content">
