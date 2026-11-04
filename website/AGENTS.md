@@ -64,6 +64,7 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 ## Docs area conventions (`#/docs`)
 
 - **Adding docs = writing markdown.** H2 (`##`) starts a broad category (auto kicker + section-title separator); H3 (`###`) adds a section under it. The sidebar picks both up via `docHeadings()` — no component or CSS edits needed.
+- **`docs.md` mirrors the repo's own docs** (`agent-docs/ARCHITECTURE.md`, `REPO-KNOWLEDGE.md`, `SUPABASE.md` + root README): source content from them, keep "current vs. planned" explicitly separated, and re-sync when backend/game/schema facts change.
 - **Keep `KICKER_BASE` in sync** (`markdown.ts`): it must equal the number of JSX sections above the docs (currently 2: STACK, API), so the first category renders as 03.
 - **Sidebar open state is shared** (`useDocsSidebar`): the floating hamburger (left of the pill nav, `#/docs` only) and DocsShell flip the same boolean. Jumping closes it only below 960px (overlay drawer); the rail persists on wide screens.
 - Keep the `DOC_SECTIONS` list in `Docs.tsx` in sync with JSX section ids (`stack`, `api`) and their `level` (0 = category, 1 = section) if you add headings outside the markdown.
