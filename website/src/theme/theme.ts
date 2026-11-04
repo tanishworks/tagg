@@ -68,7 +68,7 @@ const palettes: Record<ThemeMode, ThemePalette> = {
         onFg: '#ffffff',
         onFgMuted: 'rgba(255, 255, 255, 0.55)',
         glowSoft: 'rgba(0, 0, 0, 0.15)',
-        glowMid: 'rgba(0, 0, 0, 0.17)',
+        glowMid: 'rgba(0, 0, 0, 0.12)',
         gradientTint: '#f0f0f0',
         gradientTintDeep: '#e6e6e6',
         noiseOpacity: 0.12,
