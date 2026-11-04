@@ -141,7 +141,7 @@ button {
     animation: none;
   }
 
-  .site-header,
+  .float-nav,
   .docs-page,
   .docs-scrim,
   .docs-drawer {
@@ -150,52 +150,79 @@ button {
 }
 
 /* Header ------------------------------------------------------------------
- * Sticky + in-flow slot (no fixed-position body padding). Auto-hides while
- * scrolling down (transform), reveals on scroll-up, near the page top, or
- * when the pointer nears the top edge. Opaque background keeps scrolled
- * content readable behind it; the hairline appears once the page scrolls.
- * Three-column grid so the pill nav is always dead center:
- * brand (+ docs toggle) | nav | actions.
+ * Plain in-flow bar: brand left, GitHub/theme actions right. The pill nav is
+ * NOT in here — it floats center-screen above the page (see "Floating nav")
+ * because it hides/shows independently of the header chrome.
+ * Same 1fr/1fr trick as before is applied to the floating container so the
+ * pill never moves when the hamburger button is present or absent.
  */
 
 .site-header {
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
-  padding: 1rem 1.5rem;
-  background-color: var(--color-bg);
-  border-bottom: 1px solid transparent;
-  transition:
-    transform 280ms cubic-bezier(0.3, 0.9, 0.3, 1),
-    border-color 200ms ease;
+  padding: 1.25rem 1.5rem 0;
 }
 
-.site-header[data-hidden='true'] {
-  transform: translateY(-100%);
-}
+/* Floating nav -------------------------------------------------------------
+ * Transparent fixed container holding the pill nav and — on docs pages —
+ * the circle hamburger that opens the docs sidebar. No background on purpose;
+ * only the pill and circle paint. Full-bleed symmetric grid (1fr auto 1fr,
+ * explicit columns) keeps the pill pixel-identical to the old centered one
+ * with or without the hamburger. Slides up while scrolling down; back down
+ * on scroll-up, near the page top, or when the pointer nears the top edge.
+ * z-index sits under the docs scrim/drawer so the sidebar keeps focus.
+ */
 
-.site-header[data-scrolled='true'] {
-  border-bottom-color: var(--color-border);
-}
-
-.header-left {
-  justify-self: start;
-  display: flex;
+.float-nav {
+  position: fixed;
+  top: 1.25rem;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 0.75rem;
+  pointer-events: none;
+  transition: transform 280ms cubic-bezier(0.3, 0.9, 0.3, 1);
 }
 
-/* The docs toggle hugs the pill nav: pushed to the right edge of the
- * left grid column, so it sits immediately left of the nav pill. */
-.header-docs-toggle {
-  margin-left: auto;
+.float-nav[data-hidden='true'] {
+  transform: translateY(-150%);
+}
+
+.float-nav > * {
+  pointer-events: auto;
+}
+
+.float-nav > .pill-nav {
+  grid-column: 2;
+}
+
+/* Circle hamburger — same scheme as the pill: fg surface, on-fg glyph that
+ * brightens on hover. CSS-drawn bars (see .icon-bars), no font glyph needed. */
+.float-docs-toggle {
+  grid-column: 1;
+  justify-self: end;
+  margin-right: 0.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--color-fg);
+  color: var(--color-on-fg-muted);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.float-docs-toggle:hover {
+  color: var(--color-on-fg);
 }
 
 /* Three neat bars (currentColor), drawn in CSS so no font's glyph coverage
@@ -823,22 +850,8 @@ button {
 
 @media (max-width: 640px) {
   .site-header {
-    display: flex;
     flex-wrap: wrap;
     padding-top: 1rem;
-  }
-
-  .pill-nav {
-    order: 3;
-    width: 100%;
-    max-width: 100%;
-    justify-content: center;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .pill-nav::-webkit-scrollbar {
-    display: none;
   }
 
   .hero {

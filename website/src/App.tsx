@@ -25,15 +25,27 @@ const PAGES: Record<Route, ComponentType> = {
 }
 
 function SiteHeader() {
+  return (
+    <header className="site-header">
+      <a className="brand" href="#/">
+        TAGG
+      </a>
+      <div className="header-actions">
+        <GithubLink />
+        <ThemeToggle />
+      </div>
+    </header>
+  )
+}
+
+function FloatingNav() {
   const { route, navigate } = useHashRoute()
   const { open, setOpen } = useDocsSidebar()
 
-  // Auto-hide on scroll-down; reveal on scroll-up, near the page top, or
-  // when the pointer comes near the top edge of the screen. The scroll
-  // check is coalesced through requestAnimationFrame so it runs at most
-  // once per frame.
+  // Slides up (out of view) while scrolling down; slides down again on
+  // scroll-up, near the page top, or when the pointer nears the top edge.
+  // Coalesced through requestAnimationFrame so it runs at most once per frame.
   const [hidden, setHidden] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     let lastY = window.scrollY
@@ -43,7 +55,6 @@ function SiteHeader() {
       frame = requestAnimationFrame(() => {
         frame = 0
         const y = window.scrollY
-        setScrolled(y > 8)
         if (y < 120) {
           setHidden(false)
         } else if (y > lastY + 4) {
@@ -67,38 +78,25 @@ function SiteHeader() {
   }, [])
 
   return (
-    <header
-      className="site-header"
-      data-hidden={hidden ? 'true' : 'false'}
-      data-scrolled={scrolled ? 'true' : 'false'}
-    >
-      <div className="header-left">
-        <a className="brand" href="#/">
-          TAGG
-        </a>
-        {route === '/docs' && (
-          <button
-            type="button"
-            className="icon-button header-docs-toggle"
-            aria-label="Toggle docs contents"
-            aria-expanded={open}
-            aria-controls="docs-drawer"
-            onClick={() => setOpen((value) => !value)}
-          >
-            <span className="icon-bars" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-          </button>
-        )}
-      </div>
+    <div className="float-nav" data-hidden={hidden ? 'true' : 'false'}>
+      {route === '/docs' && (
+        <button
+          type="button"
+          className="float-docs-toggle"
+          aria-label="Toggle docs contents"
+          aria-expanded={open}
+          aria-controls="docs-drawer"
+          onClick={() => setOpen((value) => !value)}
+        >
+          <span className="icon-bars" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+      )}
       <PillNav items={NAV_ITEMS} active={route} onChange={navigate} />
-      <div className="header-actions">
-        <GithubLink />
-        <ThemeToggle />
-      </div>
-    </header>
+    </div>
   )
 }
 
@@ -134,6 +132,7 @@ function Site() {
     <div className="site">
       <div className="site-bg" aria-hidden="true" />
       <SiteHeader />
+      <FloatingNav />
       <main className="site-content" aria-busy={!fontsReady}>
         {fontsReady ? <Page key={route} /> : <PageSkeleton />}
       </main>
