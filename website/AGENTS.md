@@ -56,6 +56,8 @@ Live URL: https://tanishworks.github.io/tagg/ (`base: '/tagg/'` in `vite.config.
 
 ## Gotchas
 
+- ascii-reveal measures ONCE per reveal, so page content is gated behind `useFontsReady()` (`src/lib/useFontsReady.ts`): reveals start only after the Google Fonts stylesheet is on, `document.fonts.ready` resolves, and every family/weight used at first paint is explicitly `fonts.load()`ed. If you add a font weight/family for first-paint text, update the `weightsByFamily` map in that hook. A ~3.5 s fallback unblocks offline/blocked-CDN environments (fallback fonts are then used). While waiting, `<AsciiSkeleton>` shows in `App.tsx`.
+
 - Theme variables live on `:root` after React mounts; the two hex fallbacks in CSS (`html[data-theme=...]`) cover the pre-JS paint only.
 - `<StrictMode>` double-mounts effects in dev — ascii-reveal reveals twice in dev is normal, production is single-pass.
 - `website/` uses **2-space style + oxlint** (Vite conventions). The root Prettier `tabWidth: 4` does not apply here.

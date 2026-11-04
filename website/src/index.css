@@ -251,6 +251,12 @@ button {
   padding-block: 4rem 1rem;
 }
 
+.fonts-loading {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 7rem 1.5rem 3rem;
+}
+
 .eyebrow {
   color: var(--color-muted);
   font-family: var(--font-mono);
