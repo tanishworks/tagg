@@ -50,6 +50,18 @@ button {
   color: var(--color-bg);
 }
 
+/* Press feedback — buttons and interactive capsules compress slightly while
+ * pressed (:active). The scale is shared; transforms are added to each
+ * element's own transition list so their color/border transitions survive.
+ * transform only, so layout never shifts while pressing. */
+.pill-nav:active,
+.float-docs-toggle:active,
+.icon-button:active,
+.btn:active,
+.docs-section-link:active {
+  transform: scale(0.97);
+}
+
 :focus-visible {
   outline: 2px solid var(--color-fg);
   outline-offset: 3px;
@@ -218,7 +230,9 @@ button {
   background-color: var(--color-fg);
   color: var(--color-on-fg-muted);
   cursor: pointer;
-  transition: color 200ms ease;
+  transition:
+    color 200ms ease,
+    transform 120ms ease;
 }
 
 .float-docs-toggle:hover {
@@ -270,7 +284,8 @@ button {
   text-decoration: none;
   transition:
     color 150ms ease,
-    border-color 150ms ease;
+    border-color 150ms ease,
+    transform 120ms ease;
 }
 
 .icon-button:hover {
@@ -293,6 +308,7 @@ button {
   background-color: var(--color-fg);
   /* keep the indicator from poking out of the rounded corners */
   isolation: isolate;
+  transition: transform 120ms ease;
 }
 
 .pill-indicator {
@@ -404,7 +420,8 @@ button {
   transition:
     border-color 150ms ease,
     background-color 150ms ease,
-    color 150ms ease;
+    color 150ms ease,
+    transform 120ms ease;
 }
 
 .btn-solid {
@@ -715,7 +732,8 @@ button {
   cursor: pointer;
   transition:
     color 150ms ease,
-    border-color 150ms ease;
+    border-color 150ms ease,
+    transform 120ms ease;
 }
 
 .docs-section-link:hover {
