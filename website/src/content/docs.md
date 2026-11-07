@@ -114,3 +114,32 @@ Adding a docs section means editing `src/content/docs.md` — no component or CS
 - Pushes to `main` touching website build inputs (code, fonts, the docs markdown) trigger `.github/workflows/deploy-website.yml`: build → publish the `gh-pages` branch → GitHub Pages serves it at [tanishworks.github.io/tagg](https://tanishworks.github.io/tagg/).
 - Hash routing (`#/docs`) keeps URLs working without Pages rewrite rules; the Vite `base` path `/tagg/` matches.
 - Manual escape hatch when CI is unavailable: `npm run deploy` (from `website/`).
+
+### Design system
+
+The look is monochrome by construction — pure black/white plus neutral grays, never hue:
+
+- **Tokens, not hexes** — every color and font lives in `src/theme/theme.ts` and is published as CSS variables on `:root`; two modes (dark default, light) following the OS unless toggled.
+- **Three-tier type** — Press Start 2P for display (heroes, kickers, card titles), Inter for body/UI, JetBrains Mono for terminal accents — all self-hosted in `public/fonts`.
+- **ascii-reveal** — text and cards decode in through a character grid; `prefers-reduced-motion` swaps it for a short fade.
+- **Press feedback** — buttons and capsules compress to `scale(0.97)` while pressed, a transform-only effect that never shifts layout.
+
+## Documenting
+
+You are reading self-documenting docs: this page is markdown, compiled to site-styled HTML at load. Here's how to extend it.
+
+### Authoring a doc
+
+1. Edit `src/content/docs.md` — plain markdown only; no components or CSS changes needed.
+2. **`## Heading` starts a broad category.** It renders the numbered separator (`06: // CONCEPTS`, `07: // DOCUMENTING`) — the numbering auto-continues the page's JSX sections, via `KICKER_BASE` in `src/lib/markdown.ts`.
+3. **`### Heading` adds a section** under the current category. Ids are derived slugs (`### HTTP API` → `#http-api`); the sidebar and scroll-spy pick them up automatically.
+4. Fenced code blocks render as the site's terminal windows (the language tag becomes the window label). Tables, lists, inline code and external links are styled by the docs CSS; external links open in a new tab.
+5. Check locally with `npm run dev`, then ship through the usual branch → commit flow. Docs markdown is a website build input, so it deploys like any code change.
+
+### Rules of the road
+
+- **Current vs. planned, kept honest.** State what exists; anything designed-but-not-built is labelled `planned`/`not yet applied`. The repo docs are the reference: `agent-docs/ARCHITECTURE.md` (design intent + game rules), `agent-docs/REPO-KNOWLEDGE.md` (repo status), `agent-docs/SUPABASE.md` (schema, SQL, RLS) and the root `README.md`.
+- **Mirror, don't fork.** Source content from those files; when the backend, game rules or schema change, update this page (and the endpoint terminal above) in the same change.
+- **Keep sources-of-truth pointers** (`agent-docs/…`) alive in the text, so future editors can trace where every claim came from.
+- **Structure stays navigable.** Prefer more `###` sections over one long `##` blob — the sidebar is the page's table of contents.
+- **Two constants to keep in sync** when touching structure: `KICKER_BASE` (number of JSX sections above the docs; currently 2) and the `DOC_SECTIONS` list in `src/pages/Docs.tsx` (holds the JSX sections' ids and levels).
