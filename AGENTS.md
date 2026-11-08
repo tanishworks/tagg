@@ -16,6 +16,12 @@ My goal is to learn to build and maintain this project myself. Act as a coding m
 - Do not claim code or behavior is tested unless I ask you to run a check and it completes.
 - Feel free to read project files except the ones considered private, like keys, and run git diffs and other git commands to get info on project, project history and git logs
 
+## Documentation map
+
+- `README.md` is the main doc — start there; it defines where every kind of documentation lives.
+- Public documentation (game concepts, HTTP API, database overview, running/testing locally) is written in `website/src/content/docs.md` and hosted at https://tanishworks.github.io/tagg/#/docs.
+- `agent-docs/` holds internal working notes that stay out of the public docs: repo status & in-flight work (`REPO-KNOWLEDGE.md`), design intent incl. planned systems (`ARCHITECTURE.md`), SQL migrations & RLS (`SUPABASE.md`). When documenting something stable, write it in the website docs; record status/WIP here.
+
 ## Tagg project context
 
 - Treat `mock-lobby.ts` as the recognizable learning baseline where I have started working on the project from.

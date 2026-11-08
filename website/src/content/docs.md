@@ -19,6 +19,8 @@ A match flows through four phases:
 3. **Play** — the client streams coordinates to `LobbyRoom`; the Durable Object judges tags and broadcasts everyone's positions in memory at the edge.
 4. **Conclude** — a match summary (winner, per-player results) is written back to the database, and career wins update.
 
+Today's Worker implements the phase 1–2 REST over HTTP (join / leave / roster / role). Phase 3's WebSocket gameplay and phase 4's `/lobby/conclude` are design targets not built yet — in-flight status lives in `agent-docs/REPO-KNOWLEDGE.md`.
+
 ### Design principles
 
 Why this architecture looks the way it does:
@@ -62,7 +64,7 @@ Known/planned state, kept honest:
 - **`player_name`** — display-name mirror from auth metadata is designed, SQL written, **not yet applied**. The Worker would read names for lobby rosters; the client never queries Supabase directly.
 - **Signup row creation** — a trigger on `auth.users` INSERT is decided (no extra Worker round-trip). Also **not yet applied**; SQL lives in `agent-docs/SUPABASE.md`.
 - **`matches` history** — a permanent match-results table is design intent in `agent-docs/ARCHITECTURE.md`, not built yet.
-- The docs above describe current state as we sync it — `agent-docs/REPO-KNOWLEDGE.md` and `agent-docs/SUPABASE.md` are the sources of truth.
+- This section describes the live schema; `agent-docs/SUPABASE.md` owns the migration SQL, apply status and RLS design, and `agent-docs/REPO-KNOWLEDGE.md` tracks in-flight backend work.
 
 ## Repository
 
@@ -73,7 +75,7 @@ Known/planned state, kept honest:
 | `tagg-apis/` | Cloudflare Worker backend — Hono routes, `LobbyRoom` Durable Object, Supabase glue. The active development frontier. |
 | `mobile/` | Expo React Native client (SDK ~58) — where the game surfaces. |
 | `website/` | The site you're reading — monochrome landing site + these docs, deployed to GitHub Pages. |
-| `agent-docs/` | Sources of truth for the project: `ARCHITECTURE.md` (design intent, game rules), `REPO-KNOWLEDGE.md` (repo status), `SUPABASE.md` (schema, SQL, RLS). |
+| `agent-docs/` | Internal working notes for agent sessions: repo status & in-flight work (`REPO-KNOWLEDGE.md`), design intent & planned-but-unbuilt systems (`ARCHITECTURE.md`), SQL migrations & RLS (`SUPABASE.md`). |
 
 ### Running locally
 
@@ -88,7 +90,59 @@ cd mobile && npm start           # expo start
 cd website && npm run dev        # vite
 ```
 
-The Worker expects `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` bindings. Schema, SQL migrations and RLS notes live in `agent-docs/SUPABASE.md`.
+The Worker expects `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` bindings. Locally, Wrangler reads them from `tagg-apis/.dev.vars` (create it yourself; it stays local and gitignored):
+
+```bash
+# tagg-apis/.dev.vars
+SUPABASE_URL=https://<your-project-ref>.supabase.co
+SUPABASE_PUBLISHABLE_KEY=<publishable (anon) key>
+```
+
+SQL migrations, apply status and RLS design notes live in `agent-docs/SUPABASE.md`.
+
+### Testing the API locally
+
+`npm run dev` serves the Worker on the URL Wrangler prints (typically `http://localhost:8080`). Play it with `curl` or an HTTP client like Bruno/Postman.
+
+Every endpoint requires a Supabase Auth JWT from a signed-in player (email/password auth must be enabled in your project):
+
+```bash
+curl "https://<your-project-ref>.supabase.co/auth/v1/token?grant_type=password" \
+  -H "apikey: <publishable (anon) key>" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "your-password"}'
+# → grab "access_token" from the JSON response
+```
+
+Then call the endpoints, passing the token as `Authorization: Bearer <access_token>`:
+
+```bash
+TOKEN=<access_token>
+BASE=http://localhost:8080
+
+# Join a lobby (also sets current_lobby_id in Supabase; rejoining is idempotent)
+curl -X POST $BASE/lobby/join \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"lobbyID": "test-lobby"}'
+
+# Roster, host and running flag
+curl $BASE/lobby/test-lobby -H "Authorization: Bearer $TOKEN"
+
+# Set your role ("hunter" | "hider")
+curl -X POST $BASE/lobby/role \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"lobbyID": "test-lobby", "role": "hunter"}'
+
+# Leave the lobby (the body carries the playerID)
+curl -X POST $BASE/lobby/leave \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"lobbyID": "test-lobby", "playerID": "<your player id>"}'
+```
+
+Responses follow `{ "success": boolean, "message": string }` with `400` for rejected actions and `401` for missing/invalid tokens. Without the `.dev.vars` bindings above, every endpoint fails locally (tokens are validated first). Local Durable Object lobby state persists in `tagg-apis/.wrangler/state/` across dev restarts.
 
 ## Website
 
@@ -138,8 +192,9 @@ You are reading self-documenting docs: this page is markdown, compiled to site-s
 
 ### Rules of the road
 
-- **Current vs. planned, kept honest.** State what exists; anything designed-but-not-built is labelled `planned`/`not yet applied`. The repo docs are the reference: `agent-docs/ARCHITECTURE.md` (design intent + game rules), `agent-docs/REPO-KNOWLEDGE.md` (repo status), `agent-docs/SUPABASE.md` (schema, SQL, RLS) and the root `README.md`.
-- **Mirror, don't fork.** Source content from those files; when the backend, game rules or schema change, update this page (and the endpoint terminal above) in the same change.
-- **Keep sources-of-truth pointers** (`agent-docs/…`) alive in the text, so future editors can trace where every claim came from.
+- **This page is the source of documentation.** Stable knowledge — concepts, game rules, HTTP API, database overview, running/testing locally — lives here in `website/src/content/docs.md`, written to stand alone for any reader.
+- **`agent-docs/` is the internal layer.** Working notes only: current status, in-flight work, known gotchas, SQL to apply, planned-but-unbuilt design. It links to this page, not the other way around; code-knowledge internals (stubs, todos, apply status) stay out of the public docs.
+- **Current vs. planned, kept honest.** State what exists; anything designed-but-not-built is labelled `planned`/`not yet applied`. When the backend, game rules or schema change, update this page (and the endpoint terminal above) in the same change.
+- The root `README.md` is the map: repo layout, per-sub-project commands, and pointers to this page and to `agent-docs/`.
 - **Structure stays navigable.** Prefer more `###` sections over one long `##` blob — the sidebar is the page's table of contents.
 - **Two constants to keep in sync** when touching structure: `KICKER_BASE` (number of JSX sections above the docs; currently 2) and the `DOC_SECTIONS` list in `src/pages/Docs.tsx` (holds the JSX sections' ids and levels).
