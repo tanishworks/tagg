@@ -1,5 +1,7 @@
 # Tagg Architecture & Data Flow
 
+> **Layer note (design intent, not current state):** this document describes the *planned* system, including table names (`profiles`, `matches`) that the live database doesn't use — reality is `players` (see [SUPABASE.md](./SUPABASE.md)) — and WebSocket gameplay plus `/lobby/conclude`, which are not built yet. What actually exists today is tracked in [REPO-KNOWLEDGE.md](./REPO-KNOWLEDGE.md); the public-facing overview of the working system lives in `website/src/content/docs.md` (concept + lifecycle sections).
+
 This document outlines the architecture for **Tagg**, a real-time multiplayer location-based tag game. 
 
 The architecture is designed to be **compute- and cost-efficient**:

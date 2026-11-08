@@ -1,6 +1,8 @@
 # Tagg — Project & Repository Knowledge
 
-> Context for agent sessions and future contributors. Keep it updated as the project evolves. Companion to [ARCHITECTURE.md](./ARCHITECTURE.md) (the design doc) and the `AGENTS.md` files.
+> Internal working notes for agent sessions: repository structure, current status, in-flight work, known gotchas. Companion files: [ARCHITECTURE.md](./ARCHITECTURE.md) (design intent, incl. planned-but-unbuilt systems) and [SUPABASE.md](./SUPABASE.md) (SQL migrations, apply status, RLS).
+
+**Docs hierarchy:** stable documentation lives in `website/src/content/docs.md` and is hosted at the [website docs page](https://tanishworks.github.io/tagg/#/docs) — concepts, HTTP API, database overview, running/testing locally. This folder holds the code-knowledge internals that stay out of the public docs: WIP, stubs, applied/unapplied SQL, gotchas. Record status here; update public docs there; **point, don't copy**.
 
 ## Project
 
@@ -13,11 +15,11 @@
 - `tagg-apis/` — Cloudflare Worker backend (Hono + Durable Objects + Supabase). **Primary area of active development.**
 - `mobile/` — Expo React Native client (SDK ~58). Currently only the untouched Expo starter template.
 - `website/` — Vite + React (TS) project landing site, deployed to GitHub Pages (`gh-pages` branch) at https://tanishworks.github.io/tagg/. Monochrome terminal/pixel aesthetic. See its `README.md` + `AGENTS.md`.
-- `agent-docs/` — agent-facing docs: `ARCHITECTURE.md` (intended system design & game rules) and this file (`REPO-KNOWLEDGE.md`).
+- `agent-docs/` — internal working notes: `ARCHITECTURE.md` (design intent & planned systems), this file (`REPO-KNOWLEDGE.md`, repo status & gotchas), and `SUPABASE.md` (SQL migrations, apply status, RLS).
 - Root:
   - `package.json` — root scripts: `dev`/`deploy` = wrangler, `lint` = eslint. Deps: hono, wrangler, eslint, typescript.
   - `AGENTS.md` — learning-first mentor instructions + Tagg context.
-  - `README.md` — **empty (0 lines)** — needs content eventually.
+  - `README.md` — main repo doc: repo map, status, the documentation hierarchy, and per-sub-project install/run/deploy commands.
   - `eslint.config.mjs`, `.prettierrc` (tabWidth 4, spaces).
 
 ## Backend: `tagg-apis/`
@@ -29,6 +31,7 @@
   - `GET /lobby/:id`
   - `POST /lobby/role`
   - **No `/lobby/conclude` endpoint yet; no WebSocket/GPS/tag logic yet** (despite ARCHITECTURE.md describing it).
+- Testing locally: run `npm run dev`, then call the endpoints per the website docs' [Testing the API locally](../website/src/content/docs.md#testing-the-api-locally). Local lobby state persists in `.wrangler/state/` across restarts.
 - `src/types.ts` — `Role`, `Coordinates`, `PlayerID`, `LobbyID`, `Player`.
 - `src/mock-lobby.ts` — in-memory learning baseline (Maps, `runTest()`, string-returning helpers, personal TODOs/comments).
 - `src/supabaseFunctions/`:
@@ -61,7 +64,7 @@
 ## Frontend: `website/`
 
 - **Purpose:** project landing site (features, gameplay, docs). Static, no connection to the live API yet.
-- **Stack:** Vite 8 + React 19 + TypeScript, `ascii-reveal` ^0.3 (hero/cards decode animation), Inter + JetBrains Mono + Press Start 2P fonts, oxlint. Deploys via `gh-pages` npm script and `.github/workflows/deploy-website.yml` (push to `main` with website build-input changes → builds to `gh-pages` branch).
+- **Stack:** Vite 8 + React 19 + TypeScript, `ascii-reveal` ^0.3 (hero/cards decode animation), self-hosted fonts (`public/fonts` — Inter, JetBrains Mono, Press Start 2P; OFL via @fontsource), oxlint. Deploys via `gh-pages` npm script and `.github/workflows/deploy-website.yml` (push to `main` with website build-input changes → builds to `gh-pages` branch).
 - **Pages:** Home (`#/`), Gameplay (`#/gameplay`), Docs (`#/docs`) — hash routing (`src/lib/useHashRoute.ts`), chosen because Pages can't rewrite paths. Base path `/tagg/` in `vite.config.ts` must match the Pages URL.
 - **Theme system:** every color/font token in `src/theme/theme.ts` (`ThemePalette` dark/light + `FONT_TOKENS`), published to `:root` CSS variables by `ThemeProvider`; components consume variables or `useTheme()`. Rules: never hardcode colors/fonts; monochrome only. Follows OS `prefers-color-scheme` unless the visitor toggled (localStorage `tagg-site-theme`).
 - **Key components:** `PillNav` (sliding active indicator, DOM-measured), `Icons` (GitHub + theme toggle).
@@ -79,7 +82,6 @@
 - `tagg-apis/src/supabaseFunctions/setCurrentLobbyID.ts` is untracked and is an empty stub — the first concrete task in the backend sequence.
 - Env has TODOs about `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` vars & secrets.
 - No conclude endpoint, no WS handling yet.
-- Root `README.md` empty.
 
 ## Git
 

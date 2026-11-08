@@ -1,6 +1,6 @@
 # Supabase — Schema, SQL, and RLS Notes (Tagg)
 
-> Reference for everything database-side: the real schema, SQL to apply via the Supabase SQL Editor, and RLS design notes. Items marked **NOT YET APPLIED** must be run in the dashboard before the related Worker behaviour will work. Companion files: [ARCHITECTURE.md](./ARCHITECTURE.md) (design intent), [REPO-KNOWLEDGE.md](./REPO-KNOWLEDGE.md) (repo status).
+> Reference for everything database-side: the real schema, SQL to apply via the Supabase SQL Editor, and RLS design notes. Items marked **NOT YET APPLIED** must be run in the dashboard before the related Worker behaviour will work. Companion files: [ARCHITECTURE.md](./ARCHITECTURE.md) (design intent), [REPO-KNOWLEDGE.md](./REPO-KNOWLEDGE.md) (repo status). The public-facing schema overview (no SQL, no apply status) is the website docs' Player data section in `website/src/content/docs.md`.
 
 ## How the Worker talks to Supabase
 
