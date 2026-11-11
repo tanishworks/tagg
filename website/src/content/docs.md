@@ -73,7 +73,7 @@ Known/planned state, kept honest:
 | Directory | What it is |
 | --- | --- |
 | `tagg-apis/` | Cloudflare Worker backend — Hono routes, `LobbyRoom` Durable Object, Supabase glue. The active development frontier. |
-| `mobile/` | Expo React Native client (SDK ~58) — where the game surfaces. |
+| `client/` | Expo React Native client (SDK ~58) — where the game surfaces. |
 | `website/` | The site you're reading — monochrome landing site + these docs, deployed to GitHub Pages. |
 | `agent-docs/` | Internal working notes for agent sessions: repo status & in-flight work (`REPO-KNOWLEDGE.md`), design intent & planned-but-unbuilt systems (`ARCHITECTURE.md`), SQL migrations & RLS (`SUPABASE.md`). |
 
@@ -83,8 +83,8 @@ Known/planned state, kept honest:
 # backend — Hono routes + LobbyRoom Durable Object
 cd tagg-apis && npm run dev      # wrangler dev
 
-# mobile — Expo client
-cd mobile && npm start           # expo start
+# client — Expo client
+cd client && npm start           # expo start
 
 # website — the site you're reading
 cd website && npm run dev        # vite

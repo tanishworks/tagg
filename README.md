@@ -11,7 +11,7 @@ A real-time multiplayer **location-based tag game** (hide-and-seek style). Playe
 | Path | What it is |
 |------|------------|
 | [`tagg-apis/`](tagg-apis/) | Cloudflare Worker backend (Hono + Durable Objects + Supabase) — lobby join/leave/roster/role endpoints |
-| [`mobile/`](mobile/) | Expo React Native client (SDK ~58, Expo Router) — in development |
+| [`client/`](client/) | Expo React Native client (SDK ~58, Expo Router) — in development |
 | [`website/`](website/) | Vite + React (TS) landing site, deployed via GitHub Pages from the `gh-pages` branch |
 | [`agent-docs/`](agent-docs/) | Internal working notes for agent sessions: current status, in-flight work, gotchas, SQL to apply, planned design (`ARCHITECTURE.md`, `REPO-KNOWLEDGE.md`, `SUPABASE.md`). Pointers to the public docs, never copies. See [Documentation](#documentation). |
 
@@ -36,11 +36,11 @@ When documenting something new: write it in `website/src/content/docs.md`, then 
 
 ### Agent notes
 
-Each sub-project carries its own `AGENTS.md` with toolchain-specific instructions (`tagg-apis/`, `mobile/`, `website/`). Root [`AGENTS.md`](AGENTS.md) sets the learning-first workflow and points to this README and [`agent-docs/`](agent-docs/) for the internal notes.
+Each sub-project carries its own `AGENTS.md` with toolchain-specific instructions (`tagg-apis/`, `client/`, `website/`). Root [`AGENTS.md`](AGENTS.md) sets the learning-first workflow and points to this README and [`agent-docs/`](agent-docs/) for the internal notes.
 
 ## Commands
 
-Everything is run from inside the sub-project directory (`tagg-apis/`, `mobile/`, or `website/`). There are no automated tests yet — lint and typecheck are the available checks.
+Everything is run from inside the sub-project directory (`tagg-apis/`, `client/`, or `website/`). There are no automated tests yet — lint and typecheck are the available checks.
 
 ### Backend (`tagg-apis/`) — Cloudflare Worker
 
@@ -56,7 +56,7 @@ npm run cf-typegen  # regenerate Cloudflare Worker types (after wrangler.jsonc c
 
 How to fetch a Supabase token and call the four lobby endpoints against the dev server is documented in the website docs' [Testing the API locally](https://tanishworks.github.io/tagg/#/docs) section (source: [`website/src/content/docs.md`](website/src/content/docs.md)). The local-only env it needs lives in `tagg-apis/.dev.vars`.
 
-### Mobile client (`mobile/`) — Expo React Native
+### Mobile client (`client/`) — Expo React Native
 
 ```bash
 npm install        # install dependencies

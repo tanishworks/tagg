@@ -8,12 +8,12 @@
 
 **Tagg** — a real-time multiplayer location-based tag game (hide-and-seek style, roles: `hunter` / `hider`).
 
-- **Current phase (owner-stated direction):** working solo on the backend (`tagg-apis/`) step by step, integrated with Supabase, then the client app (`mobile/`), before moving to production, releases, and branches.
+- **Current phase (owner-stated direction):** working solo on the backend (`tagg-apis/`) step by step, integrated with Supabase, then the client app (`client/`), before moving to production, releases, and branches.
 
 ## Repository layout
 
 - `tagg-apis/` — Cloudflare Worker backend (Hono + Durable Objects + Supabase). **Primary area of active development.**
-- `mobile/` — Expo React Native client (SDK ~58). Currently only the untouched Expo starter template.
+- `client/` — Expo React Native client (SDK ~58). Currently only the untouched Expo starter template.
 - `website/` — Vite + React (TS) project landing site, deployed to GitHub Pages (`gh-pages` branch) at https://tanishworks.github.io/tagg/. Monochrome terminal/pixel aesthetic. See its `README.md` + `AGENTS.md`.
 - `agent-docs/` — internal working notes: `ARCHITECTURE.md` (design intent & planned systems), this file (`REPO-KNOWLEDGE.md`, repo status & gotchas), and `SUPABASE.md` (SQL migrations, apply status, RLS).
 - Root:
@@ -53,7 +53,7 @@
 - **`player_name` (decided)**: planned `players.player_name` column snapshotted from auth `raw_user_meta_data` (`display_name` key — it is *metadata*, not a column) at signup, kept in sync by an update trigger on `auth.users`. The **Worker** reads names with a user-scoped client for lobby rosters; the client never queries Supabase. SQL + RLS in [`SUPABASE.md`](./SUPABASE.md).
 - **Drift vs `ARCHITECTURE.md`**: the design doc's aspirational schema names the table `profiles` (with `name`, `total_games_played`, plus a `matches` table); the real table is `players` with the columns above. `ARCHITECTURE.md` stays design-**intent**; this file documents actual state until we decide to sync them.
 
-## Frontend: `mobile/`
+## Frontend: `client/`
 
 - Expo SDK ~58 (`expo@~58.0.19`, RN `0.88`, expo-router `~58`, reanimated 4.7.1, React 19.3).
 - `src/app/` — `_layout.tsx`, `index.tsx` (Welcome-to-Expo home + dev hints), `explore.tsx` (starter docs screen). Two tabs via `app-tabs.tsx` / `app-tabs.web.tsx`.
@@ -91,7 +91,7 @@
 ## Agent instructions to respect (per sub-project AGENTS.md)
 
 - `tagg-apis/AGENTS.md`: Cloudflare Workers — fetch **current** docs before Workers/DO/Supabase work; Local Explorer endpoints; `wrangler dev/deploy/types`; error 1102 CPU/mem limits.
-- `mobile/AGENTS.md`: Expo SDK ~58 — fetch versioned docs before writing Expo code; use `npx expo install`; Expo Router; `ios/`+`android/` absent → generated (never hand-edit); Expo Go limited to bundled modules.
+- `client/AGENTS.md`: Expo SDK ~58 — fetch versioned docs before writing Expo code; use `npx expo install`; Expo Router; `ios/`+`android/` absent → generated (never hand-edit); Expo Go limited to bundled modules.
 - `website/AGENTS.md`: Vite/React site — all colors & fonts are tokens in `src/theme/theme.ts` (never hardcode); 2-space style + oxlint (root Prettier 4-space doesn't apply); hash routes; deploys to `gh-pages` via CI on `main`; the two hex fallbacks in `website/index.html` must stay in sync with `theme.ts`.
 
 ## Conventions
@@ -102,6 +102,6 @@
 ## Suggested next steps (from here)
 
 1. Implement `setCurrentLobbyID` + finish backend Supabase integration step by step.
-2. Build client app in `mobile/`.
+2. Build client app in `client/`.
 3. Keep `website/` copy in sync with API/game-rule changes (it documents the lobby endpoints and roles).
 4. Production, releases, branches.
