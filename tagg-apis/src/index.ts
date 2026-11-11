@@ -7,7 +7,6 @@ import setCurrentLobbyID from "./supabaseFunctions/setCurrentLobbyID"
 
 export interface Env {
     MY_DURABLE_OBJECT: DurableObjectNamespace<LobbyRoom>;
-    //  TODO: Configure these values for local development and deployed Workers. EDIT: What does this mean??
     SUPABASE_URL: string;
     SUPABASE_PUBLISHABLE_KEY: string;
 }
@@ -20,7 +19,7 @@ const app = new Hono<{ Bindings: Env }>();
     - How would the other clients know the game has started once the lobby.running updates to true so it can start sharing location and the rest of the proccess?
 */
 
-//  TODO: implement try{}catch{} error handling
+// !TODO: implement try{}catch{} error handling
 //  and standardize c.json structure to
 //  error: boolean, message: string
 //  and get rid of error: string
