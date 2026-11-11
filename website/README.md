@@ -27,7 +27,7 @@ Everything color- and type-related is tokenized in [`src/theme/theme.ts`](src/th
 | `#/gameplay` | Hunter/hider roles, a round step-by-step |
 | `#/docs` | Stack cards + the endpoint terminal, then the docs area: category-separated markdown (Concepts / Reference / Repository) with a two-level drawer sidebar |
 
-Pill nav floats center-screen above the page in a transparent container (see `FloatingNav` in `src/App.tsx`); the active indicator slides between tabs (DOM-measured, animated transform). It slides up while scrolling down and comes back on scroll-up, near the page top, or when the pointer nears the top edge. On `#/docs` a circle hamburger (matching the pill's color scheme, no container background) sits immediately left of the pill and opens the docs sidebar; the sidebar itself only exists on the docs page. GitHub + theme-toggle icons remain in the static header, top-right.
+Pill nav floats center-screen above the page in a transparent container (see `FloatingNav` in `src/App.tsx`); the active indicator slides between tabs (DOM-measured, animated transform). It slides up while scrolling down and comes back on scroll-up, near the page top, or when the pointer nears the top edge. On `#/docs` a circle hamburger (matching the pill's color scheme, no container background) sits immediately left of the pill and opens the docs sidebar; the sidebar itself only exists on the docs page. There is no top bar: the app icon (`SiteMark`) stands alone top-left, and the theme toggle is fixed to the left edge, vertically centered (hidden on mobile).
 
 ## Docs
 
@@ -42,7 +42,7 @@ src/
 ├── lib/              # hash router, markdown renderer, sidebar state, font gate
 ├── components/       # PillNav, Icons, DocsShell (docs sidebar)
 ├── pages/            # Home, Gameplay, Docs
-├── App.tsx           # header, FloatingNav (pill + hamburger), pages, footer
+├── App.tsx           # SiteMark (icon), side toggle, FloatingNav (pill + hamburger), pages, footer
 └── index.css         # styles (consumes only theme CSS variables)
 ```
 
