@@ -50,6 +50,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (typeof value === 'string') root.style.setProperty(name, value)
     }
 
+    // The favicon follows the mode too: the ClearDark/ClearLight 32px icon
+    // variants match the page's tone (index.html pre-sets the dark one).
+    const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+    if (icon) {
+      icon.type = 'image/png'
+      icon.href = mode === 'light' ? '/tagg/tagg-icon-clear-light-32.png' : '/tagg/tagg-icon-clear-dark-32.png'
+    }
+
     writeStoredMode(mode)
   }, [mode])
 

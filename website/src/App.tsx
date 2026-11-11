@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { ComponentType } from 'react'
 import { AsciiSkeleton } from 'ascii-reveal'
-import { ThemeProvider } from './theme/ThemeProvider'
+import { ThemeProvider, useTheme } from './theme/ThemeProvider'
 import { DocsSidebarProvider, useDocsSidebar } from './lib/useDocsSidebar'
 import { GITHUB_URL, useHashRoute } from './lib/useHashRoute'
 import type { Route } from './lib/useHashRoute'
 import { PillNav } from './components/PillNav'
-import { GithubLink, ThemeToggle } from './components/Icons'
+import { ThemeToggle } from './components/Icons'
 import { Home } from './pages/Home'
 import { Gameplay } from './pages/Gameplay'
 import { Docs } from './pages/Docs'
@@ -24,17 +24,20 @@ const PAGES: Record<Route, ComponentType> = {
   '/docs': Docs,
 }
 
-function SiteHeader() {
+/* The app icon stands where the old header bar was — the site's brand mark.
+ * It follows the mode with the same branded variants as the hero:
+ * Dark (teal dot on dark) / Default (teal dot on light). */
+function SiteMark() {
+  const { mode } = useTheme()
   return (
-    <header className="site-header">
-      <a className="brand" href="#/">
-        TAGG
-      </a>
-      <div className="header-actions">
-        <GithubLink />
-        <ThemeToggle />
-      </div>
-    </header>
+    <a className="site-mark" href="#/" aria-label="Tagg home">
+      <img
+        src={mode === 'light' ? '/tagg/tagg-icon-default-256.png' : '/tagg/tagg-icon-256.png'}
+        alt=""
+        width={256}
+        height={256}
+      />
+    </a>
   )
 }
 
@@ -131,7 +134,10 @@ function Site() {
   return (
     <div className="site">
       <div className="site-bg" aria-hidden="true" />
-      <SiteHeader />
+      <SiteMark />
+      <div className="side-toggle">
+        <ThemeToggle />
+      </div>
       <FloatingNav />
       <main className="site-content" aria-busy={!fontsReady}>
         {fontsReady ? <Page key={route} /> : <PageSkeleton />}
