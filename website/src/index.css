@@ -87,6 +87,8 @@ button {
 
 .site-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Moving gradient background ----------------------------------------------
@@ -161,22 +163,32 @@ button {
   }
 }
 
-/* Header ------------------------------------------------------------------
- * Plain in-flow bar: brand left, GitHub/theme actions right. The pill nav is
- * NOT in here — it floats center-screen above the page (see "Floating nav")
- * because it hides/shows independently of the header chrome.
- * Same 1fr/1fr trick as before is applied to the floating container so the
- * pill never moves when the hamburger button is present or absent.
+/* Site mark ----------------------------------------------------------------
+ * The app icon alone, top-left, where the old header bar (brand + GitHub +
+ * theme toggle) used to be. It links home. The image swaps per mode between
+ * the ClearDark/ClearLight icon variants (src/App.tsx SiteMark).
  */
 
-.site-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 1.25rem 1.5rem 0;
+.site-mark {
+  align-self: flex-start;
+  display: inline-flex;
+  margin: 1.25rem 1.5rem 0;
+}
+
+.site-mark img {
+  display: block;
+  width: 2.5rem;
+  height: auto;
+}
+
+/* Theme toggle, docked to the left edge, vertically centered. Hidden on small
+ * screens — a thumb-reach toggle at the edge is more harm than help there. */
+.side-toggle {
+  position: fixed;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
 }
 
 /* Floating nav -------------------------------------------------------------
@@ -214,8 +226,9 @@ button {
   grid-column: 2;
 }
 
-/* Circle hamburger — same scheme as the pill: fg surface, on-fg glyph that
- * brightens on hover. CSS-drawn bars (see .icon-bars), no font glyph needed. */
+/* Circle hamburger — same scheme as the pill: bg surface with a border, muted
+ * glyph that brightens on hover. CSS-drawn bars (see .icon-bars), no font
+ * glyph needed. */
 .float-docs-toggle {
   grid-column: 1;
   justify-self: end;
@@ -225,10 +238,10 @@ button {
   justify-content: center;
   width: 2.25rem;
   height: 2.25rem;
-  border: none;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background-color: var(--color-fg);
-  color: var(--color-on-fg-muted);
+  background-color: var(--color-bg);
+  color: var(--color-muted);
   cursor: pointer;
   transition:
     color 200ms ease,
@@ -236,7 +249,7 @@ button {
 }
 
 .float-docs-toggle:hover {
-  color: var(--color-on-fg);
+  color: var(--color-fg);
 }
 
 /* Three neat bars (currentColor), drawn in CSS so no font's glyph coverage
@@ -253,21 +266,6 @@ button {
   width: 14px;
   height: 2px;
   background-color: currentColor;
-}
-
-.brand {
-  justify-self: start;
-  font-family: var(--font-pixel);
-  font-size: 0.8rem;
-  text-decoration: none;
-  color: var(--color-fg);
-}
-
-.header-actions {
-  justify-self: end;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .icon-button {
@@ -294,9 +292,12 @@ button {
 }
 
 /* Pill nav -----------------------------------------------------------------
- * Default pill background  = scheme foreground color (inverted).
- * Active indicator        = scheme background color.
- * Inactive tab text       = on-foreground token; active tab text = foreground.
+ * Default pill background  = scheme background color (dark in dark mode), with
+ * a border so it holds its shape on the same-colored page.
+ * Active indicator        = scheme foreground color (light).
+ * Inactive tab text       = muted; active tab text sits on the light indicator
+ *                          and reads in the background color.
+ * Tabs use the mono font (terminal accent, per FONT_TOKENS hierarchy).
  */
 
 .pill-nav {
@@ -304,8 +305,9 @@ button {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background-color: var(--color-fg);
+  background-color: var(--color-bg);
   /* keep the indicator from poking out of the rounded corners */
   isolation: isolate;
   transition: transform 120ms ease;
@@ -317,7 +319,7 @@ button {
   bottom: 0.25rem;
   left: 0;
   border-radius: 999px;
-  background-color: var(--color-bg);
+  background-color: var(--color-fg);
   transition:
     transform 350ms cubic-bezier(0.3, 0.9, 0.3, 1),
     width 350ms cubic-bezier(0.3, 0.9, 0.3, 1);
@@ -336,22 +338,22 @@ button {
   border: none;
   border-radius: 999px;
   background: none;
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 500;
   letter-spacing: 0.04em;
-  color: var(--color-on-fg-muted);
+  color: var(--color-muted);
   white-space: nowrap;
   cursor: pointer;
   transition: color 200ms ease;
 }
 
 .pill-tab:hover {
-  color: var(--color-on-fg);
+  color: var(--color-fg);
 }
 
 .pill-tab[data-active] {
-  color: var(--color-fg);
+  color: var(--color-bg);
 }
 
 /* Hero -------------------------------------------------------------------- */
@@ -359,7 +361,20 @@ button {
 .hero {
   max-width: 72rem;
   margin: 0 auto;
-  padding: 6rem 1.5rem 3rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+/* Home hero fills the leftover viewport height (site-content is a flex
+ * column) and centers its content vertically — whitespace is whatever the
+ * header, footer and content leave over, so it self-balances as the
+ * clamp()-sized heading grows, instead of fixed paddings fighting it. */
+.hero-fill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero-compact {
@@ -379,6 +394,15 @@ button {
   letter-spacing: 0.14em;
 }
 
+/* App icon between the eyebrow and the display heading. The PNG ships the
+ * rounded-square artwork (incl. its colors) — it is a brand asset, not CSS. */
+.hero-icon {
+  display: block;
+  width: clamp(5.5rem, 12vw, 7rem);
+  height: auto;
+  margin: 3rem auto 2.5rem;
+}
+
 .display {
   font-family: var(--font-pixel);
   font-size: clamp(2.4rem, 9vw, 5.5rem);
@@ -394,6 +418,7 @@ button {
 
 .tagline {
   max-width: 44rem;
+  margin-inline: auto;
   color: var(--color-muted);
   font-size: clamp(1rem, 2vw, 1.15rem);
   line-height: 1.75;
@@ -403,8 +428,22 @@ button {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
-  margin-top: 2.25rem;
+  margin-top: 3rem;
+}
+
+/* Install command pill — placeholder copy until package builds exist. */
+.install-pill {
+  display: inline-flex;
+  margin-top: 1.5rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background-color: var(--color-surface);
+  color: var(--color-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
 }
 
 .btn {
@@ -414,6 +453,10 @@ button {
   border-radius: 999px;
   font-family: var(--font-pixel);
   font-size: 0.6rem;
+  /* Press Start 2P doesn't cover glyphs like "→"; the fallback font's taller
+   * line metrics would inflate that button. Fixed line-height makes every
+   * button's height = font-size + padding, regardless of glyph coverage. */
+  line-height: 1;
   letter-spacing: 0.08em;
   text-decoration: none;
   border: 1px solid transparent;
@@ -432,16 +475,6 @@ button {
 .btn-solid:hover {
   background-color: var(--color-bg);
   color: var(--color-fg);
-  border-color: var(--color-fg);
-}
-
-.btn-ghost {
-  border-color: var(--color-border);
-  color: var(--color-fg);
-  background-color: var(--color-bg);
-}
-
-.btn-ghost:hover {
   border-color: var(--color-fg);
 }
 
@@ -877,12 +910,29 @@ button {
 /* Responsive --------------------------------------------------------------- */
 
 @media (max-width: 640px) {
-  .site-header {
-    flex-wrap: wrap;
-    padding-top: 1rem;
+  /* no theme toggle at the edge on small screens */
+  .side-toggle {
+    display: none;
   }
 
   .hero {
     padding-top: 3rem;
+  }
+
+  /* Thumb-reach: the floating pill nav and docs hamburger dock to the bottom
+   * edge on small screens. The hide-on-scroll-down slide flips direction to
+   * match (slides down out of view instead of up). */
+  .float-nav {
+    top: auto;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .float-nav[data-hidden='true'] {
+    transform: translateY(150%);
+  }
+
+  /* keep the docked nav from covering footer text */
+  .site-footer {
+    padding-bottom: 6.5rem;
   }
 }
