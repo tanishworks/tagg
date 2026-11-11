@@ -7,6 +7,14 @@ export function Home() {
     const { mode } = useTheme()
     return (
         <section className="hero hero-fill">
+            {/* The tagg itself, drawn in glyphs in the top-right corner. The library
+                forces `position: relative` on its own wrapper inline, so the geometry
+                lives on this parent and the reveal fills it. `loading` stays true
+                because a static page has no request to finish — the ghost simply
+                keeps drifting. `data-ascii="skip"` keeps the hero's reveal off it. */}
+            <div className="hero-mascot" aria-hidden="true" data-ascii="skip">
+                <AsciiReveal mascot="ghost" loading />
+            </div>
             <AsciiReveal preset="terminal" duration="cinematic">
                 <p className="eyebrow" data-ascii="fade">
                     // README.md

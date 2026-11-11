@@ -83,6 +83,7 @@ button {
   --ascii-glyph: var(--color-muted);
   --ascii-flash: var(--color-fg);
   --ascii-font: var(--font-mono);
+  --ascii-mascot: var(--color-muted);
 }
 
 .site-content {
@@ -359,10 +360,30 @@ button {
 /* Hero -------------------------------------------------------------------- */
 
 .hero {
+  position: relative;
   max-width: 72rem;
   margin: 0 auto;
   padding: 2.5rem 1.5rem;
   text-align: center;
+}
+
+/* ascii-reveal ghost in the hero's top-right corner. The library sets
+ * `position: relative` inline on its own wrapper, so the geometry lives on this
+ * parent and the reveal is stretched to fill it. Resize these two values to
+ * change the glyph grid. Colour comes from `--ascii-mascot` on `.site`. */
+.hero-mascot {
+  position: absolute;
+  top: 8%;
+  right: 92%;
+  width: 20rem;
+  height: 20rem;
+  pointer-events: none;
+}
+
+/* The reveal wrapper is empty — its canvas is absolutely positioned — so give
+ * it the parent's box to measure. */
+.hero-mascot > div {
+  height: 100%;
 }
 
 /* Home hero fills the leftover viewport height (site-content is a flex
@@ -917,6 +938,11 @@ button {
 
   .hero {
     padding-top: 3rem;
+  }
+
+  /* no room beside the centred hero at this width */
+  .hero-mascot {
+    display: none;
   }
 
   /* Thumb-reach: the floating pill nav and docs hamburger dock to the bottom
